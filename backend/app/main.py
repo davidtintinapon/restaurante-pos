@@ -26,9 +26,13 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # ── Middleware ────────────────────────────────────────────────
 app.add_middleware(SecurityHeadersMiddleware)
+_cors_origins = settings.FRONTEND_ORIGINS or [
+    "https://app.zyquid.com",
+    "https://restaurante-pos-kappa.vercel.app",
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.FRONTEND_ORIGINS,
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["Authorization", "Content-Type"],
