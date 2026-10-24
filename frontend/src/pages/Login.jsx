@@ -4,6 +4,20 @@ import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import Spinner from '../components/ui/Spinner'
 
+// Logo Zyquid inline
+const ZyquidLogo = ({ className = 'h-12' }) => (
+  <svg className={className} viewBox="0 0 320 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g>
+      <polygon points="4,4 44,4 44,12 16,40 30,40 30,48 4,48 4,40 32,12 4,12" fill="#FFFFFF"/>
+      <polygon points="28,40 37,40 46,50 37,50" fill="#6E9BCB"/>
+    </g>
+    <text x="60" y="38" fontFamily="'Inter', 'Segoe UI', system-ui, sans-serif"
+          fontWeight="700" fontSize="26" letterSpacing="4" fill="#FFFFFF">
+      ZYQUID
+    </text>
+  </svg>
+)
+
 export default function Login() {
   const { login } = useAuth()
   const toast = useToast()
@@ -16,7 +30,6 @@ export default function Login() {
     setLoading(true)
     try {
       const user = await login(form.email, form.password)
-      // Redirigir según rol
       if (user.rol === 'cocinero') navigate('/cocina')
       else if (user.rol === 'mozo') navigate('/mesas')
       else navigate('/dashboard')
@@ -31,9 +44,8 @@ export default function Login() {
     <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-100">RestaurantePOS</h1>
-          <p className="text-gray-500 text-sm mt-1">Gestión inteligente para tu restaurante</p>
+        <div className="flex justify-center mb-8">
+          <ZyquidLogo className="h-10 w-auto" />
         </div>
 
         <div className="card p-6 shadow-2xl">
@@ -69,7 +81,7 @@ export default function Login() {
         </div>
 
         <p className="text-center text-gray-600 text-xs mt-6">
-          © {new Date().getFullYear()} RestaurantePOS · v1.0
+          © {new Date().getFullYear()} Zyquid · v1.0
         </p>
       </div>
     </div>

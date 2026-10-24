@@ -46,10 +46,6 @@ const ZyquidLogo = ({ className = 'h-8' }) => (
           fontWeight="700" fontSize="26" letterSpacing="4" fill="#FFFFFF">
       ZYQUID
     </text>
-    <text x="61" y="54" fontFamily="'Inter', 'Segoe UI', system-ui, sans-serif"
-          fontWeight="400" fontSize="9" letterSpacing="2.5" fill="#6E9BCB">
-      SISTEMA DE GESTIÓN
-    </text>
   </svg>
 )
 
