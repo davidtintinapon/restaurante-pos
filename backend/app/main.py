@@ -4,22 +4,20 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
-from .core.database import engine, Base
 from .middleware.security_headers import SecurityHeadersMiddleware
 from .core.config import settings
 from .routers import auth, mesas, carta, pedidos, cocina, usuarios, reportes, superadmin, superadmin_dashboard, configuracion
 from .routers import gastos
-# ── Crear tablas ─────────────────────────────────────────────
-Base.metadata.create_all(bind=engine)
 
 # ── Rate limiter ─────────────────────────────────────────────
 limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
 
 # ── App ──────────────────────────────────────────────────────
 app = FastAPI(
-    title="RestauranteSaaS API",
+    title="Zyquid POS API",
     version="1.0.0",
-    docs_url="/docs",
+    # Deshabilitar docs en producción para no exponer la API pública
+    docs_url="/docs" if settings.ENVIRONMENT != "production" else None,
     redoc_url=None,
 )
 
@@ -30,10 +28,10 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.FRONTEND_ORIGIN],
+    allow_origins=settings.FRONTEND_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 # ── Routers ───────────────────────────────────────────────────
