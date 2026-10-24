@@ -100,11 +100,25 @@ export default function Layout() {
 
         {/* Logo */}
         <div className={`flex items-center border-b border-gray-800/80
-                         ${sideOpen ? 'px-4 py-5 gap-2' : 'py-5 justify-center'}`}>
-          {sideOpen ? (
-            <ZyquidLogo className="h-11 w-auto" />
-          ) : (
-            <ZyquidIcon className="w-10 h-10" />
+                         ${sideOpen ? 'px-4 py-[18px] gap-3' : 'py-[18px] justify-center'}`}>
+          {/* Ícono Z — siempre visible */}
+          <svg width="36" height="36" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
+            <rect width="110" height="110" rx="10" fill="#0B2545"/>
+            <polygon points="14,14 96,14 96,30 34,82 64,82 64,96 14,96 14,82 76,30 14,30" fill="#FFFFFF"/>
+            <polygon points="72,82 91,82 110,104 92,104" fill="#6E9BCB"/>
+          </svg>
+          {/* Wordmark — solo cuando está abierto */}
+          {sideOpen && (
+            <span style={{
+              fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
+              fontWeight: 800,
+              fontSize: '18px',
+              letterSpacing: '5px',
+              color: '#FFFFFF',
+              paddingLeft: '2px',
+            }}>
+              ZYQUID
+            </span>
           )}
         </div>
 
