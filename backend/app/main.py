@@ -16,7 +16,6 @@ limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
 app = FastAPI(
     title="Zyquid POS API",
     version="1.0.0",
-    # Deshabilitar docs en producción para no exponer la API pública
     docs_url="/docs" if settings.ENVIRONMENT != "production" else None,
     redoc_url=None,
 )
@@ -26,10 +25,13 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # ── Middleware ────────────────────────────────────────────────
 app.add_middleware(SecurityHeadersMiddleware)
-_cors_origins = settings.FRONTEND_ORIGINS or [
+
+_PROD_ORIGINS = [
     "https://app.zyquid.com",
     "https://restaurante-pos-kappa.vercel.app",
 ]
+_cors_origins = settings.FRONTEND_ORIGINS if settings.FRONTEND_ORIGINS else _PROD_ORIGINS
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
@@ -52,5 +54,6 @@ app.include_router(configuracion.router)
 app.include_router(gastos.router)
 
 @app.get("/health")
+@app.head("/health")
 def health():
     return {"status": "ok"}
