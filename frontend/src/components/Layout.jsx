@@ -25,6 +25,34 @@ const ICONS = {
   chevron:      'M15 19l-7-7 7-7',
 }
 
+// ── Logo Zyquid ───────────────────────────────────────────────
+// Ícono "Z" solo (sidebar colapsado)
+const ZyquidIcon = ({ className = 'w-8 h-8' }) => (
+  <svg className={className} viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="110" height="110" rx="10" fill="#0B2545"/>
+    <polygon points="14,14 96,14 96,30 34,82 64,82 64,96 14,96 14,82 76,30 14,30" fill="#FFFFFF"/>
+    <polygon points="72,82 91,82 110,104 92,104" fill="#6E9BCB"/>
+  </svg>
+)
+
+// Logo completo con wordmark "ZYQUID" (sidebar abierto)
+const ZyquidLogo = ({ className = 'h-8' }) => (
+  <svg className={className} viewBox="0 0 320 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g>
+      <polygon points="4,4 44,4 44,12 16,40 30,40 30,48 4,48 4,40 32,12 4,12" fill="#FFFFFF"/>
+      <polygon points="28,40 37,40 46,50 37,50" fill="#6E9BCB"/>
+    </g>
+    <text x="60" y="38" fontFamily="'Inter', 'Segoe UI', system-ui, sans-serif"
+          fontWeight="700" fontSize="26" letterSpacing="4" fill="#FFFFFF">
+      ZYQUID
+    </text>
+    <text x="61" y="54" fontFamily="'Inter', 'Segoe UI', system-ui, sans-serif"
+          fontWeight="400" fontSize="9" letterSpacing="2.5" fill="#6E9BCB">
+      SISTEMA DE GESTIÓN
+    </text>
+  </svg>
+)
+
 // Grupos de navegación por función
 const NAV_GROUPS = [
   {
@@ -75,14 +103,12 @@ export default function Layout() {
              style={{ width: sideOpen ? '232px' : '62px' }}>
 
         {/* Logo */}
-        <div className={`flex items-center gap-3 px-4 border-b border-gray-800/80
-                         ${sideOpen ? 'py-[18px]' : 'py-[18px] justify-center'}`}>
-          <span className="text-xl flex-shrink-0 select-none">🍽️</span>
-          {sideOpen && (
-            <div className="min-w-0">
-              <p className="font-bold text-gray-100 text-sm leading-tight truncate">RestaurantePOS</p>
-              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-medium">Sistema de gestión</p>
-            </div>
+        <div className={`flex items-center border-b border-gray-800/80
+                         ${sideOpen ? 'px-4 py-[14px] gap-2' : 'py-[14px] justify-center'}`}>
+          {sideOpen ? (
+            <ZyquidLogo className="h-9 w-auto" />
+          ) : (
+            <ZyquidIcon className="w-9 h-9" />
           )}
         </div>
 
@@ -94,7 +120,6 @@ export default function Layout() {
 
             return (
               <div key={group.label}>
-                {/* Etiqueta de grupo — solo visible con sidebar abierto */}
                 {sideOpen && (
                   <p className="section-title">{group.label}</p>
                 )}
@@ -116,7 +141,6 @@ export default function Layout() {
                                     ? 'bg-brand-500/15 text-brand-400'
                                     : 'text-gray-500 hover:text-gray-200 hover:bg-gray-800/60'}`}
                     >
-                      {/* Barra activa lateral */}
                       {active && (
                         <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] bg-brand-500 rounded-r-full" />
                       )}
@@ -139,7 +163,6 @@ export default function Layout() {
         {/* Usuario + logout */}
         <div className="border-t border-gray-800/80 p-3">
           <div className={`flex items-center gap-2.5 ${!sideOpen ? 'justify-center' : ''}`}>
-            {/* Avatar */}
             <div className="w-8 h-8 rounded-full bg-brand-500/20 ring-1 ring-brand-500/30
                             flex items-center justify-center
                             text-brand-400 font-bold text-sm flex-shrink-0">
@@ -173,7 +196,6 @@ export default function Layout() {
         {/* Topbar */}
         <header className="h-14 bg-gray-950 border-b border-gray-800/80
                            flex items-center px-4 gap-3 flex-shrink-0">
-          {/* Toggle sidebar */}
           <button
             onClick={() => setSideOpen(s => !s)}
             className="p-1.5 rounded-md text-gray-500 hover:text-gray-200 hover:bg-gray-800
@@ -181,10 +203,8 @@ export default function Layout() {
             <Icon d={ICONS.menu} className="w-5 h-5" />
           </button>
 
-          {/* Separador */}
           <div className="w-px h-5 bg-gray-800 flex-shrink-0" />
 
-          {/* Fecha */}
           <span className="text-gray-500 text-sm capitalize">
             {new Date().toLocaleDateString('es-PE', {
               weekday: 'long', day: 'numeric', month: 'long',
@@ -192,10 +212,8 @@ export default function Layout() {
             })}
           </span>
 
-          {/* Spacer */}
           <div className="flex-1" />
 
-          {/* Rol badge en topbar */}
           <span className="text-[11px] font-semibold text-gray-600 uppercase tracking-widest hidden sm:block">
             {user?.rol}
           </span>
