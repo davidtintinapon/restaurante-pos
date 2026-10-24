@@ -6,8 +6,9 @@ from slowapi.errors import RateLimitExceeded
 
 from .core.database import engine, Base
 from .middleware.security_headers import SecurityHeadersMiddleware
-from .routers import auth, mesas, carta, pedidos, cocina, usuarios, reportes, superadmin, superadmin_dashboard
-
+from .core.config import settings
+from .routers import auth, mesas, carta, pedidos, cocina, usuarios, reportes, superadmin, superadmin_dashboard, configuracion
+from .routers import gastos
 # ── Crear tablas ─────────────────────────────────────────────
 Base.metadata.create_all(bind=engine)
 
@@ -29,7 +30,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # En producción reemplazar por dominios reales
+    allow_origins=[settings.FRONTEND_ORIGIN],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -45,7 +46,8 @@ app.include_router(usuarios.router)
 app.include_router(reportes.router)
 app.include_router(superadmin.router)
 app.include_router(superadmin_dashboard.router)
-
+app.include_router(configuracion.router)
+app.include_router(gastos.router)
 
 @app.get("/health")
 def health():

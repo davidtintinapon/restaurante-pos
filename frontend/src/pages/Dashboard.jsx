@@ -5,7 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from 'recharts'
 
-function StatCard({ label, value, icon, sub, color = 'brand' }) {
+function StatCard({ label, value, sub, color = 'brand' }) {
   const colors = {
     brand:  'from-brand-600/20 to-brand-500/10 border-brand-700/50 text-brand-400',
     green:  'from-green-600/20 to-green-500/10 border-green-700/50 text-green-400',
@@ -17,10 +17,9 @@ function StatCard({ label, value, icon, sub, color = 'brand' }) {
       <div className="flex items-start justify-between">
         <div>
           <p className="text-gray-400 text-sm">{label}</p>
-          <p className="text-3xl font-bold text-gray-100 mt-1">{value}</p>
+          <p className="text-2xl sm:text-3xl font-bold text-gray-100 mt-1">{value}</p>
           {sub && <p className="text-xs text-gray-500 mt-1">{sub}</p>}
         </div>
-        <span className="text-3xl">{icon}</span>
       </div>
     </div>
   )
@@ -73,7 +72,7 @@ useEffect(() => {
       {stockBajo.length > 0 && (
         <div className="bg-yellow-900/30 border border-yellow-700/50 rounded-xl px-4 py-3">
           <p className="text-yellow-400 text-sm font-semibold mb-2">
-            ⚠️ Stock bajo ({stockBajo.length} productos)
+            Stock bajo ({stockBajo.length} productos)
           </p>
           <div className="flex flex-wrap gap-2">
             {stockBajo.map(p => (
@@ -86,40 +85,36 @@ useEffect(() => {
         </div>
       )}
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           label="Ventas hoy"
           value={`S/. ${stats.ventas_hoy.toFixed(2)}`}
-          icon="💰"
           sub={`${stats.pedidos_hoy} pedidos cerrados`}
           color="brand"
         />
         <StatCard
           label="Ventas del mes"
           value={`S/. ${stats.ventas_mes.toFixed(2)}`}
-          icon="📅"
           color="green"
         />
         <StatCard
           label="Pedidos activos"
           value={stats.pedidos_activos}
-          icon="🧾"
           sub="En curso ahora"
           color="blue"
         />
         <StatCard
           label="Mesas ocupadas"
           value={stats.mesas_ocupadas}
-          icon="🪑"
           sub={`Ticket prom. S/. ${stats.ticket_promedio}`}
           color="purple"
         />
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Ventas 7 días */}
-        <div className="card p-5 lg:col-span-2">
+        <div className="card p-5 xl:col-span-2">
           <h3 className="text-sm font-semibold text-gray-300 mb-4">Ventas últimos 7 días</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={ventas} barSize={28}>

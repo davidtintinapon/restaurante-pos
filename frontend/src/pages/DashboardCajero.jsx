@@ -4,7 +4,7 @@ import api from '../api'
 import Spinner from '../components/ui/Spinner'
 import Badge from '../components/ui/Badge'
 
-function StatCard({ label, value, icon, sub, color = 'brand' }) {
+function StatCard({ label, value, sub, color = 'brand' }) {
   const colors = {
     brand:  'from-brand-600/20 to-brand-500/10 border-brand-700/50 text-brand-400',
     green:  'from-green-600/20 to-green-500/10 border-green-700/50 text-green-400',
@@ -19,7 +19,6 @@ function StatCard({ label, value, icon, sub, color = 'brand' }) {
           <p className="text-3xl font-bold text-gray-100 mt-1">{value}</p>
           {sub && <p className="text-xs text-gray-500 mt-1">{sub}</p>}
         </div>
-        <span className="text-3xl">{icon}</span>
       </div>
     </div>
   )
@@ -71,28 +70,24 @@ export default function DashboardCajero() {
         <StatCard
           label="Ingresos hoy"
           value={`S/. ${stats.ventas_hoy.toFixed(2)}`}
-          icon="💰"
           sub={`${stats.pedidos_hoy} pedidos cobrados`}
           color="brand"
         />
         <StatCard
           label="Pedidos activos"
           value={stats.pedidos_activos}
-          icon="🧾"
           sub="En curso ahora"
           color="blue"
         />
         <StatCard
           label="Mesas ocupadas"
           value={stats.mesas_ocupadas}
-          icon="🪑"
           sub={`Ticket prom. S/. ${stats.ticket_promedio}`}
           color="purple"
         />
         <StatCard
           label="Ticket promedio"
           value={`S/. ${stats.ticket_promedio}`}
-          icon="🧾"
           sub="Hoy"
           color="green"
         />
@@ -128,9 +123,6 @@ export default function DashboardCajero() {
                 className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg
                            hover:bg-gray-800 cursor-pointer transition-colors">
                 <div className="flex items-center gap-3">
-                  <span className="text-lg">
-                    {p.tipo === 'llevar' ? '🥡' : '🪑'}
-                  </span>
                   <div>
                     <p className="text-sm font-medium text-gray-200">
                       {p.tipo === 'llevar' ? p.nombre_cliente : `Mesa ${p.numero_mesa}`}

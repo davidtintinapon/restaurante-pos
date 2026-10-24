@@ -3,17 +3,10 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import { ToastProvider } from './context/ToastContext'
 import PrivateRoute from './components/PrivateRoute'
 import Layout from './components/Layout'
-import DashboardCajero from './pages/DashboardCajero'
-
-function DashboardRouter() {
-  const { user } = useAuth()
-  if (user?.rol === 'superadmin') return <SuperadminDashboard />
-  if (user?.rol === 'cajero') return <DashboardCajero />
-  return <Dashboard />
-}
 
 import Login               from './pages/Login'
 import Dashboard           from './pages/Dashboard'
+import DashboardCajero     from './pages/DashboardCajero'
 import SuperadminDashboard from './pages/SuperadminDashboard'
 import Mesas               from './pages/Mesas'
 import Pedido              from './pages/Pedido'
@@ -22,11 +15,20 @@ import Carta               from './pages/Carta'
 import Usuarios            from './pages/Usuarios'
 import Reportes            from './pages/Reportes'
 import Superadmin          from './pages/Superadmin'
+import Configuracion       from './pages/Configuracion'
+import GastosCaja          from './pages/GastosCaja'
 
-const ADMIN   = ['admin', 'superadmin']
-const STAFF   = ['admin', 'cajero', 'mozo', 'superadmin']
+const ADMIN    = ['admin', 'superadmin']
+const STAFF    = ['admin', 'cajero', 'mozo', 'superadmin']
 const COCINA_R = ['admin', 'cocinero', 'superadmin']
-const ALL     = ['admin', 'cajero', 'mozo', 'cocinero', 'superadmin']
+const ALL      = ['admin', 'cajero', 'mozo', 'cocinero', 'superadmin']
+
+function DashboardRouter() {
+  const { user } = useAuth()
+  if (user?.rol === 'superadmin') return <SuperadminDashboard />
+  if (user?.rol === 'cajero')     return <DashboardCajero />
+  return <Dashboard />
+}
 
 export default function App() {
   return (
@@ -41,7 +43,6 @@ export default function App() {
                 <Layout />
               </PrivateRoute>
             }>
-              {/* Redirect raíz */}
               <Route index element={<Navigate to="/dashboard" replace />} />
 
               <Route path="dashboard" element={
@@ -54,16 +55,14 @@ export default function App() {
                 <PrivateRoute roles={STAFF}><Mesas /></PrivateRoute>
               } />
 
-              {/* Nuevo pedido desde mesa libre */}
               <Route path="pedidos/nuevo" element={
                 <PrivateRoute roles={STAFF}><Pedido /></PrivateRoute>
               } />
-              {/* Ver/editar pedido activo de una mesa */}
+
               <Route path="pedidos/mesa/:mesa_id" element={
                 <PrivateRoute roles={STAFF}><Pedido /></PrivateRoute>
               } />
 
-              {/* Ver pedido LLEVAR por ID */}
               <Route path="pedidos/:pedido_id" element={
                 <PrivateRoute roles={STAFF}><Pedido /></PrivateRoute>
               } />
@@ -84,12 +83,19 @@ export default function App() {
                 <PrivateRoute roles={ADMIN}><Reportes /></PrivateRoute>
               } />
 
+              <Route path="gastos" element={
+                <PrivateRoute roles={['admin', 'cajero', 'superadmin']}><GastosCaja /></PrivateRoute>
+              } />
+
+              <Route path="configuracion" element={
+                <PrivateRoute roles={ADMIN}><Configuracion /></PrivateRoute>
+              } />
+
               <Route path="superadmin" element={
                 <PrivateRoute roles={['superadmin']}><Superadmin /></PrivateRoute>
               } />
             </Route>
 
-            {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </ToastProvider>

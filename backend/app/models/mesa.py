@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 from ..core.database import Base
 
@@ -15,7 +15,7 @@ class Mesa(Base):
     zona = Column(String(50), default="salon")   # salon, terraza, barra, privado
     estado = Column(String(20), default="libre") # libre, ocupada, reservada, cuenta_pedida
     activo = Column(Boolean, default=True)
-    creado_en = Column(DateTime, default=datetime.utcnow)
+    creado_en = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
     tenant = relationship("Tenant", back_populates="mesas")
     pedidos = relationship("Pedido", back_populates="mesa")

@@ -1,25 +1,36 @@
-import sys, os
-sys.path.insert(0, r"C:\Users\David\Documents\proyecto_pag\restaurante\backend")
-
+import os
+import sys
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-
 from alembic import context
 
-# ── Importar Base y todos los modelos ──────────────────────────────────────
+# ── Path dinámico (Windows local y Railway Linux) ─────────────────────────
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# ── Importar Base y todos los modelos ─────────────────────────────────────
 from app.core.database import Base  # noqa: F401
-import app.models.usuario      # noqa: F401
-import app.models.mesa         # noqa: F401
-import app.models.carta        # noqa: F401
-import app.models.pedido       # noqa: F401
+import app.models.usuario           # noqa: F401
+import app.models.mesa              # noqa: F401
+import app.models.carta             # noqa: F401
+import app.models.pedido            # noqa: F401
+import app.models.tenant            # noqa: F401
+import app.models.gasto             # noqa: F401
+import app.models.configuracion     # noqa: F401
 
 target_metadata = Base.metadata
-# ───────────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────
 
 config = context.config
+
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+# ── DATABASE_URL desde entorno (Railway la inyecta automáticamente) ───────
+db_url = os.environ.get("DATABASE_URL")
+if db_url:
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+    config.set_main_option("sqlalchemy.url", db_url)
 
 
 def run_migrations_offline() -> None:
@@ -30,7 +41,6 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
     )
-
     with context.begin_transaction():
         context.run_migrations()
 
@@ -41,13 +51,11 @@ def run_migrations_online() -> None:
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
-
     with connectable.connect() as connection:
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
         )
-
         with context.begin_transaction():
             context.run_migrations()
 

@@ -12,11 +12,6 @@ def items_pendientes(
     db: Session = Depends(get_db),
     user: Usuario = Depends(require_cocina),
 ):
-    """
-    Vista de cocina: todos los items en estado pendiente o en_preparacion
-    de pedidos activos del tenant, agrupados por pedido.
-    Polling cada 10 segundos desde el frontend.
-    """
     items = db.query(ItemPedido).options(
         joinedload(ItemPedido.plato),
         joinedload(ItemPedido.pedido).joinedload(Pedido.mesa),
@@ -29,15 +24,16 @@ def items_pendientes(
     pedidos_dict: dict = {}
     for item in items:
         pid = item.pedido_id
+        pedido = item.pedido
         if pid not in pedidos_dict:
             pedidos_dict[pid] = {
                 "pedido_id": pid,
-                "tipo": item.pedido.tipo or "salon",
-                "numero_mesa": item.pedido.mesa.numero if item.pedido.mesa else "—",
-                "nombre_mesa": item.pedido.mesa.nombre if item.pedido.mesa else "",
-                "nombre_cliente": item.pedido.nombre_cliente,
-                "creado_en": item.pedido.hora_apertura,
-                "nota_general": item.pedido.nota_general,
+                "numero_ticket": pedido.numero_ticket,
+                "tipo": pedido.tipo or "salon",
+                "nombre_cliente": pedido.nombre_cliente,
+                "numero_mesa": pedido.mesa.numero if pedido.mesa else None,
+                "nombre_mesa": pedido.mesa.nombre if pedido.mesa else "",
+                "creado_en": pedido.hora_apertura,
                 "items": [],
             }
         pedidos_dict[pid]["items"].append({
@@ -57,17 +53,17 @@ def historial_cocina(
     user: Usuario = Depends(require_cocina),
 ):
     """Items ya listos/entregados del día — para referencia."""
-    from datetime import datetime, timezone, date
+    from datetime import datetime, timezone
     hoy = datetime.now(timezone.utc).date()
 
     items = db.query(ItemPedido).options(
         joinedload(ItemPedido.plato),
         joinedload(ItemPedido.pedido).joinedload(Pedido.mesa),
     ).join(ItemPedido.pedido).filter(
-        ItemPedido.tenant_id == user.tenant_id,
+        Pedido.tenant_id == user.tenant_id,
         ItemPedido.estado.in_(["listo", "entregado"]),
-        ItemPedido.creado_en >= datetime(hoy.year, hoy.month, hoy.day, tzinfo=timezone.utc),
-    ).order_by(ItemPedido.creado_en.desc()).limit(100).all()
+        Pedido.hora_apertura >= datetime(hoy.year, hoy.month, hoy.day),
+    ).order_by(Pedido.hora_apertura.desc()).limit(100).all()
 
     return [
         {
@@ -78,7 +74,6 @@ def historial_cocina(
             "cantidad": item.cantidad,
             "nota": item.nota,
             "estado": item.estado,
-            "creado_en": item.creado_en,
         }
         for item in items
     ]

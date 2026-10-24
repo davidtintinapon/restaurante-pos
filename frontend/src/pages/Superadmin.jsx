@@ -48,7 +48,7 @@ export default function Superadmin() {
     setSaving(true)
     try {
       await api.post('/superadmin/tenants', form)
-      toast('Restaurante creado ✅', 'success')
+      toast('Restaurante creado', 'success')
       setModalTenant(false)
       cargar()
     } catch (err) {
@@ -67,7 +67,7 @@ export default function Superadmin() {
     setSavingEditar(true)
     try {
       await api.patch(`/superadmin/tenants/${editTenant.id}`, formEditar)
-      toast('Restaurante actualizado ✅', 'success')
+      toast('Restaurante actualizado', 'success')
       setModalEditar(false)
       cargar()
     } catch (err) {
@@ -94,7 +94,7 @@ export default function Superadmin() {
     <div className="max-w-6xl space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-100">⚙️ Superadmin</h1>
+          <h1 className="text-2xl font-bold text-gray-100">Superadmin</h1>
           <p className="text-gray-500 text-sm mt-0.5">{tenants.length} restaurantes en el sistema</p>
         </div>
         <button onClick={() => setModalTenant(true)} className="btn-primary">+ Nuevo restaurante</button>
@@ -141,7 +141,7 @@ export default function Superadmin() {
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button onClick={() => abrirEditar(t)} className="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded transition-colors">
-                        ✏️
+                        Editar
                       </button>
                       <button onClick={() => renovar(t, 30)} className="text-xs px-2 py-1 bg-green-900/40 hover:bg-green-800 text-green-300 rounded transition-colors">
                         +30d

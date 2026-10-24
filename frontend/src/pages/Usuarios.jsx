@@ -77,7 +77,7 @@ export default function Usuarios() {
             <tr className="border-b border-gray-800">
               <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3">Nombre</th>
               <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3">Email</th>
-              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3 hidden sm:table-cell">Email</th>
+              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3 hidden sm:table-cell">Rol</th>
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
@@ -98,9 +98,9 @@ export default function Usuarios() {
                 <td className="px-4 py-3 text-right">
                   <div className="flex justify-end gap-2">
                     <button onClick={() => abrirModal(u)}
-                      className="text-sm text-gray-400 hover:text-gray-100 transition-colors px-2 py-1">✏️</button>
+                      className="text-sm text-gray-400 hover:text-gray-100 transition-colors px-2 py-1">Editar</button>
                     <button onClick={() => eliminar(u)}
-                      className="text-sm text-gray-500 hover:text-red-400 transition-colors px-2 py-1">🗑</button>
+                      className="text-sm text-gray-500 hover:text-red-400 transition-colors px-2 py-1">Eliminar</button>
                   </div>
                 </td>
               </tr>

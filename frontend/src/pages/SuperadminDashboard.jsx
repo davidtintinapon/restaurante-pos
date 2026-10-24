@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import api from '../api'
 import Spinner from '../components/ui/Spinner'
 
-function StatCard({ label, value, icon, sub, color = 'brand' }) {
+function StatCard({ label, value, sub, color = 'brand' }) {
   const colors = {
     brand:  'from-brand-600/20 to-brand-500/10 border-brand-700/50 text-brand-400',
     green:  'from-green-600/20 to-green-500/10 border-green-700/50 text-green-400',
@@ -12,13 +12,10 @@ function StatCard({ label, value, icon, sub, color = 'brand' }) {
   }
   return (
     <div className={`card bg-gradient-to-br ${colors[color]} p-5`}>
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-gray-400 text-sm">{label}</p>
-          <p className="text-3xl font-bold text-gray-100 mt-1">{value}</p>
-          {sub && <p className="text-xs text-gray-500 mt-1">{sub}</p>}
-        </div>
-        <span className="text-3xl">{icon}</span>
+      <div>
+        <p className="text-gray-400 text-sm">{label}</p>
+        <p className="text-3xl font-bold text-gray-100 mt-1">{value}</p>
+        {sub && <p className="text-xs text-gray-500 mt-1">{sub}</p>}
       </div>
     </div>
   )
@@ -62,27 +59,23 @@ export default function SuperadminDashboard() {
         <StatCard
           label="Tenants activos"
           value={data.tenants_activos}
-          icon="🏪"
           sub={`${data.tenants_total} en total`}
           color="green"
         />
         <StatCard
           label="Suspendidos"
           value={data.tenants_suspendidos}
-          icon="⛔"
           color="red"
         />
         <StatCard
           label="Por vencer (7 días)"
           value={data.tenants_por_vencer}
-          icon="⚠️"
           sub="Requieren renovación"
           color={data.tenants_por_vencer > 0 ? 'red' : 'blue'}
         />
         <StatCard
           label="Ingresos estimados"
           value={`S/. ${data.ingresos_mes_estimado}`}
-          icon="💰"
           sub="Mes actual · tenants activos"
           color="brand"
         />
@@ -131,7 +124,7 @@ export default function SuperadminDashboard() {
                         <span className={`text-xs ${venceProximo ? 'text-red-400 font-semibold' : 'text-gray-400'}`}>
                           {vence.toLocaleDateString('es-PE')}
                           {venceProximo && diasRestantes > 0 && ` (${diasRestantes}d)`}
-                          {diasRestantes !== null && diasRestantes <= 0 && ' ⚠️ vencido'}
+                          {diasRestantes !== null && diasRestantes <= 0 && ' (vencido)'}
                         </span>
                       ) : (
                         <span className="text-xs text-gray-600">—</span>

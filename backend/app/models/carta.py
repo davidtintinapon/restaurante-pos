@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Numeric, Text
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 from ..core.database import Base
 
@@ -27,7 +27,7 @@ class Plato(Base):
     descripcion = Column(Text, nullable=True)
     precio = Column(Numeric(10, 2), nullable=False)
     disponible = Column(Boolean, default=True)
-    creado_en = Column(DateTime, default=datetime.utcnow)
+    creado_en = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     tiene_stock = Column(Boolean, default=False)
     stock = Column(Integer, default=0)
 

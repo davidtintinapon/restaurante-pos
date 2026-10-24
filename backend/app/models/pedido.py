@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Numeric, Text
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 from ..core.database import Base
 
@@ -9,17 +9,20 @@ class Pedido(Base):
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     tenant_id = Column(String(36), ForeignKey("tenants.id"), nullable=False)
-    mesa_id = Column(String(36), ForeignKey("mesas.id"), nullable=True)   # nullable para LLEVAR
+    mesa_id = Column(String(36), ForeignKey("mesas.id"), nullable=True)
     mozo_id = Column(String(36), ForeignKey("usuarios.id"), nullable=False)
-    tipo = Column(String(20), default="salon")                             # salon, llevar
-    nombre_cliente = Column(String(100), nullable=True)                    # solo para LLEVAR
+    tipo = Column(String(20), default="salon")
+    nombre_cliente = Column(String(100), nullable=True)
+    telefono_delivery = Column(String(20), nullable=True)
+    direccion_delivery = Column(String(200), nullable=True)
     estado = Column(String(20), default="abierto")
-    hora_apertura = Column(DateTime, default=datetime.utcnow)
+    hora_apertura = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
     hora_cierre = Column(DateTime, nullable=True)
     total = Column(Numeric(10, 2), default=0)
     metodo_pago = Column(String(30), nullable=True)
     pagado = Column(Boolean, default=False)
     nota_general = Column(Text, nullable=True)
+    numero_ticket = Column(Integer, nullable=True)   # correlativo diario por tenant
 
     tenant = relationship("Tenant", back_populates="pedidos")
     mesa = relationship("Mesa", back_populates="pedidos")

@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Boolean, Integer, DateTime
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 from ..core.database import Base
 
@@ -17,7 +17,7 @@ class Tenant(Base):
     vence_en     = Column(DateTime,    nullable=True)
     max_usuarios = Column(Integer,     default=10)
     max_mesas    = Column(Integer,     default=20)
-    creado_en    = Column(DateTime,    default=datetime.utcnow)
+    creado_en    = Column(DateTime,    default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
     usuarios   = relationship("Usuario",   back_populates="tenant", cascade="all, delete-orphan")
     mesas      = relationship("Mesa",      back_populates="tenant", cascade="all, delete-orphan")

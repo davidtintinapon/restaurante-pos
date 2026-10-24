@@ -8,6 +8,12 @@ from ..schemas.usuario import UsuarioCreate, UsuarioUpdate, UsuarioOut
 
 router = APIRouter(prefix="/usuarios", tags=["usuarios"])
 
+@router.get("/me", response_model=UsuarioOut)
+def mi_perfil(
+    db: Session = Depends(get_db),
+    user: Usuario = Depends(get_current_user),
+):
+    return user
 
 @router.get("/", response_model=list[UsuarioOut])
 def listar_usuarios(
@@ -116,11 +122,3 @@ def eliminar_usuario(
     target.activo = False
     db.commit()
     return {"ok": True}
-
-
-@router.get("/me", response_model=UsuarioOut)
-def mi_perfil(
-    db: Session = Depends(get_db),
-    user: Usuario = Depends(get_current_user),
-):
-    return user

@@ -20,8 +20,8 @@ class ItemPedidoOut(BaseModel):
 
 class PedidoCreate(BaseModel):
     tipo: Literal["salon", "llevar"] = "salon"
-    mesa_id: Optional[str] = None          # requerido si tipo=salon
-    nombre_cliente: Optional[str] = None   # requerido si tipo=llevar
+    mesa_id: Optional[str] = None
+    nombre_cliente: Optional[str] = None
     items: list[ItemPedidoCreate]
     nota_general: Optional[str] = None
 
@@ -33,15 +33,30 @@ class PedidoCreate(BaseModel):
             raise ValueError("nombre_cliente es requerido para pedidos LLEVAR")
         return self
 
+class PedidoDeliveryCreate(BaseModel):
+    nombre_cliente: Optional[str] = None
+    telefono: str
+    direccion: str
+    items: list[ItemPedidoCreate] = []
+
 class PedidoAgregarItems(BaseModel):
     items: list[ItemPedidoCreate]
 
 class ItemEstadoUpdate(BaseModel):
     estado: str
 
+# ── Pago mixto ────────────────────────────────────────────────────────────────
+class PagoItem(BaseModel):
+    metodo: Literal["efectivo", "yape", "plin", "tarjeta", "transferencia"]
+    monto: float
+
 class PedidoCerrar(BaseModel):
-    metodo_pago: Literal["efectivo", "yape", "plin", "tarjeta", "transferencia"]
+    # Nueva forma: lista de pagos (pago mixto)
+    pagos: Optional[list[PagoItem]] = None
+    # Forma antigua: método único (retrocompatibilidad con clientes viejos)
+    metodo_pago: Optional[Literal["efectivo", "yape", "plin", "tarjeta", "transferencia"]] = None
     descuento: Optional[float] = None
+# ─────────────────────────────────────────────────────────────────────────────
 
 class PedidoOut(BaseModel):
     id: str
@@ -50,6 +65,8 @@ class PedidoOut(BaseModel):
     numero_mesa: Optional[int] = None
     nombre_mesa: Optional[str] = None
     nombre_cliente: Optional[str] = None
+    telefono_delivery: Optional[str] = None
+    direccion_delivery: Optional[str] = None
     mozo_id: str
     nombre_mozo: str
     estado: str
@@ -59,5 +76,6 @@ class PedidoOut(BaseModel):
     metodo_pago: Optional[str] = None
     pagado: bool
     nota_general: Optional[str] = None
+    numero_ticket: Optional[int] = None
     items: list[ItemPedidoOut] = []
     model_config = {"from_attributes": True}

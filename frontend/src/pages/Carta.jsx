@@ -146,17 +146,17 @@ export default function Carta() {
 
   return (
     <div className="max-w-5xl space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-100">Carta del restaurante</h1>
           <p className="text-gray-500 text-sm mt-0.5">{carta.length} categorías</p>
         </div>
-        <button onClick={() => abrirModalCat()} className="btn-primary">+ Nueva categoría</button>
+        <button onClick={() => abrirModalCat()} className="btn-primary flex-shrink-0">+ Nueva categoría</button>
       </div>
 
       {carta.length === 0 && (
         <div className="text-center py-20 text-gray-500">
-          <p className="text-4xl mb-3">📋</p>
+          <p className="text-4xl mb-3"></p>
           <p>La carta está vacía. Crea una categoría para empezar.</p>
         </div>
       )}
@@ -164,15 +164,15 @@ export default function Carta() {
       {carta.map(cat => (
         <div key={cat.id} className="card overflow-hidden">
           {/* Header categoría */}
-          <div className="flex items-center justify-between px-5 py-3 bg-gray-800/50 border-b border-gray-800">
+          <div className="flex items-center justify-between flex-wrap gap-2 px-5 py-3 bg-gray-800/50 border-b border-gray-800">
             <div className="flex items-center gap-3">
               <span className="text-lg font-bold text-gray-100">{cat.nombre}</span>
               <span className="text-xs text-gray-500">{cat.platos.length} platos</span>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-shrink-0">
               <button onClick={() => abrirModalPlato(cat)} className="btn-secondary text-xs py-1">+ Plato</button>
-              <button onClick={() => abrirModalCat(cat)} className="text-gray-400 hover:text-gray-200 px-2">✏️</button>
-              <button onClick={() => eliminarCat(cat)} className="text-gray-500 hover:text-red-400 px-2">🗑</button>
+              <button onClick={() => abrirModalCat(cat)} className="text-gray-400 hover:text-gray-200 px-2">Editar</button>
+              <button onClick={() => eliminarCat(cat)} className="text-gray-500 hover:text-red-400 px-2">Eliminar</button>
             </div>
           </div>
 
@@ -199,7 +199,7 @@ export default function Carta() {
                         : p.stock <= 5
                         ? 'bg-yellow-900/40 text-yellow-400 border border-yellow-700'
                         : 'bg-green-900/40 text-green-400 border border-green-700'}`}>
-                    📦 {p.stock} uds
+                       {p.stock} uds
                   </button>
                 )}
 
@@ -212,9 +212,9 @@ export default function Carta() {
                     ${p.disponible ? 'left-5' : 'left-1'}`} />
                 </button>
                 <button onClick={() => abrirModalPlato(cat, p)}
-                  className="text-gray-400 hover:text-gray-200 transition-colors">✏️</button>
+                  className="text-gray-400 hover:text-gray-200 transition-colors">Editar</button>
                 <button onClick={() => eliminarPlato(p)}
-                  className="text-gray-500 hover:text-red-400 transition-colors">🗑</button>
+                  className="text-gray-500 hover:text-red-400 transition-colors">Eliminar</button>
               </div>
             ))}
           </div>

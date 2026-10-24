@@ -20,7 +20,7 @@ class UsuarioOut(BaseModel):
     nombre: str
     email: str
     rol: str
-    tenant_id: str
+    tenant_id: Optional[str] = None
     nombre_restaurante: Optional[str] = None
     ruc: Optional[str] = None
     direccion: Optional[str] = None

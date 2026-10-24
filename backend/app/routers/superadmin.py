@@ -39,7 +39,7 @@ def crear_tenant(
         activo=True,
         max_usuarios=data.max_usuarios,
         max_mesas=data.max_mesas,
-        vence_en=datetime.utcnow() + timedelta(days=30),
+        vence_en=datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=30),
     )
     db.add(tenant)
     db.flush()
@@ -88,7 +88,7 @@ def renovar_tenant(
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant no encontrado")
 
-    ahora = datetime.utcnow()
+    ahora = datetime.now(timezone.utc).replace(tzinfo=None)
     # Si estaba suspendido, renovar siempre desde hoy
     if not tenant.activo:
         base = ahora

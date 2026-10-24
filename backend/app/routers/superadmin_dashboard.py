@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from ..core.database import get_db
 from ..deps import require_superadmin
 from ..models.tenant import Tenant
@@ -16,7 +16,7 @@ def dashboard_superadmin(
     db: Session = Depends(get_db),
     _: Usuario = Depends(require_superadmin),
 ):
-    ahora = datetime.utcnow()
+    ahora = datetime.now(timezone.utc).replace(tzinfo=None)
     en_7_dias = ahora + timedelta(days=7)
 
     tenants = db.query(Tenant).all()

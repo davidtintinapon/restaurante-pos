@@ -6,20 +6,29 @@ export default {
     extend: {
       colors: {
         brand: {
-          50:  '#fff7ed',
-          100: '#ffedd5',
-          200: '#fed7aa',
-          300: '#fdba74',
-          400: '#fb923c',
-          500: '#f97316',
-          600: '#ea580c',
-          700: '#c2410c',
-          800: '#9a3412',
-          900: '#7c2d12',
+          50:  '#fef6ee',
+          100: '#fdebd6',
+          200: '#fad3ad',
+          300: '#f6b479',
+          400: '#f19043',
+          500: '#ea7a24',   // naranja principal — más cálido y menos saturado que el Tailwind default
+          600: '#d4600f',
+          700: '#b04b0e',
+          800: '#8c3c13',
+          900: '#723313',
         },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      animation: {
+        'pulse-dot': 'pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
+      keyframes: {
+        'pulse-dot': {
+          '0%, 100%': { opacity: '1' },
+          '50%':       { opacity: '0.35' },
+        },
       },
     },
   },
