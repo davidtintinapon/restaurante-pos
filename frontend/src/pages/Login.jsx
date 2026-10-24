@@ -4,18 +4,23 @@ import { useAuth } from '../context/AuthContext'
 import { useToast } from '../context/ToastContext'
 import Spinner from '../components/ui/Spinner'
 
-// Logo Zyquid inline
-const ZyquidLogo = ({ className = 'h-12' }) => (
-  <svg className={className} viewBox="0 0 320 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <g>
-      <polygon points="4,4 44,4 44,12 16,40 30,40 30,48 4,48 4,40 32,12 4,12" fill="#FFFFFF"/>
-      <polygon points="28,40 37,40 46,50 37,50" fill="#6E9BCB"/>
-    </g>
-    <text x="60" y="38" fontFamily="'Inter', 'Segoe UI', system-ui, sans-serif"
-          fontWeight="700" fontSize="26" letterSpacing="4" fill="#FFFFFF">
-      ZYQUID
-    </text>
-  </svg>
+// Logo Zyquid — ícono Z cuadrado + wordmark
+const ZyquidLogo = () => (
+  <div className="flex flex-col items-center gap-4">
+    {/* Ícono Z */}
+    <svg width="90" height="90" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="110" height="110" rx="14" fill="#0B2545"/>
+      <polygon points="14,14 96,14 96,30 34,82 64,82 64,96 14,96 14,82 76,30 14,30" fill="#FFFFFF"/>
+      <polygon points="72,82 91,82 110,104 92,104" fill="#6E9BCB"/>
+    </svg>
+    {/* Wordmark */}
+    <svg width="160" height="32" viewBox="0 0 300 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <text x="0" y="46" fontFamily="'Inter', 'Segoe UI', system-ui, sans-serif"
+            fontWeight="800" fontSize="46" letterSpacing="8" fill="#FFFFFF">
+        ZYQUID
+      </text>
+    </svg>
+  </div>
 )
 
 export default function Login() {
@@ -44,8 +49,8 @@ export default function Login() {
     <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
-        <div className="flex justify-center mb-8">
-          <ZyquidLogo className="h-10 w-auto" />
+        <div className="flex justify-center mb-10">
+          <ZyquidLogo />
         </div>
 
         <div className="card p-6 shadow-2xl">

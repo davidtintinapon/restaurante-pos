@@ -27,7 +27,7 @@ const ICONS = {
 
 // ── Logo Zyquid ───────────────────────────────────────────────
 // Ícono "Z" solo (sidebar colapsado)
-const ZyquidIcon = ({ className = 'w-8 h-8' }) => (
+const ZyquidIcon = ({ className = 'w-10 h-10' }) => (
   <svg className={className} viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect width="110" height="110" rx="10" fill="#0B2545"/>
     <polygon points="14,14 96,14 96,30 34,82 64,82 64,96 14,96 14,82 76,30 14,30" fill="#FFFFFF"/>
@@ -36,14 +36,14 @@ const ZyquidIcon = ({ className = 'w-8 h-8' }) => (
 )
 
 // Logo completo con wordmark "ZYQUID" (sidebar abierto)
-const ZyquidLogo = ({ className = 'h-8' }) => (
-  <svg className={className} viewBox="0 0 320 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+const ZyquidLogo = ({ className = 'h-10' }) => (
+  <svg className={className} viewBox="0 0 300 72" fill="none" xmlns="http://www.w3.org/2000/svg">
     <g>
-      <polygon points="4,4 44,4 44,12 16,40 30,40 30,48 4,48 4,40 32,12 4,12" fill="#FFFFFF"/>
-      <polygon points="28,40 37,40 46,50 37,50" fill="#6E9BCB"/>
+      <polygon points="2,2 46,2 46,13 18,42 33,42 33,54 2,54 2,42 31,13 2,13" fill="#FFFFFF"/>
+      <polygon points="30,42 40,42 50,54 40,54" fill="#6E9BCB"/>
     </g>
-    <text x="60" y="38" fontFamily="'Inter', 'Segoe UI', system-ui, sans-serif"
-          fontWeight="700" fontSize="26" letterSpacing="4" fill="#FFFFFF">
+    <text x="62" y="42" fontFamily="'Inter', 'Segoe UI', system-ui, sans-serif"
+          fontWeight="800" fontSize="30" letterSpacing="5" fill="#FFFFFF">
       ZYQUID
     </text>
   </svg>
@@ -100,11 +100,11 @@ export default function Layout() {
 
         {/* Logo */}
         <div className={`flex items-center border-b border-gray-800/80
-                         ${sideOpen ? 'px-4 py-[14px] gap-2' : 'py-[14px] justify-center'}`}>
+                         ${sideOpen ? 'px-4 py-5 gap-2' : 'py-5 justify-center'}`}>
           {sideOpen ? (
-            <ZyquidLogo className="h-9 w-auto" />
+            <ZyquidLogo className="h-11 w-auto" />
           ) : (
-            <ZyquidIcon className="w-9 h-9" />
+            <ZyquidIcon className="w-10 h-10" />
           )}
         </div>
 
