@@ -32,16 +32,33 @@ const PLAN_PRECIO = { basico: 150, estandar: 250, pro: 400 }
 export default function SuperadminDashboard() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     api.get('/superadmin/dashboard')
       .then(r => setData(r.data))
+      .catch(err => setError(err?.response?.data?.detail || 'Error al cargar el dashboard'))
       .finally(() => setLoading(false))
   }, [])
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
       <Spinner size="lg" />
+    </div>
+  )
+
+  if (error || !data) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="text-center">
+        <p className="text-red-400 font-semibold mb-2">No se pudo cargar el dashboard</p>
+        <p className="text-gray-500 text-sm">{error || 'Sin datos'}</p>
+        <button
+          onClick={() => { setLoading(true); setError(null); api.get('/superadmin/dashboard').then(r => setData(r.data)).catch(e => setError(e?.response?.data?.detail || 'Error')).finally(() => setLoading(false)) }}
+          className="mt-4 text-xs text-brand-400 hover:text-brand-300 underline"
+        >
+          Reintentar
+        </button>
+      </div>
     </div>
   )
 
