@@ -122,25 +122,12 @@ def _siguiente_numero_ticket(tenant_id: str, db: Session) -> int:
     """
     inicio_dia = _inicio_dia_lima_en_utc()
 
-    try:
-        # PostgreSQL / MySQL: bloqueo a nivel de fila para evitar condición de carrera
-        stmt = (
-            select(func.max(Pedido.numero_ticket))
-            .where(
-                Pedido.tenant_id == tenant_id,
-                Pedido.hora_apertura >= inicio_dia,
-                Pedido.numero_ticket.isnot(None),
-            )
-            .with_for_update()
-        )
-        ultimo = db.execute(stmt).scalar()
-    except OperationalError:
-        # SQLite no soporta FOR UPDATE — fallback sin bloqueo
-        ultimo = db.query(func.max(Pedido.numero_ticket)).filter(
-            Pedido.tenant_id == tenant_id,
-            Pedido.hora_apertura >= inicio_dia,
-            Pedido.numero_ticket.isnot(None),
-        ).scalar()
+    # MAX() no admite FOR UPDATE en PostgreSQL — leemos el máximo del día
+    ultimo = db.query(func.max(Pedido.numero_ticket)).filter(
+        Pedido.tenant_id == tenant_id,
+        Pedido.hora_apertura >= inicio_dia,
+        Pedido.numero_ticket.isnot(None),
+    ).scalar()
 
     return (ultimo or 0) + 1
 
