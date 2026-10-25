@@ -129,6 +129,19 @@ def actualizar_usuario(
             raise HTTPException(status_code=400, detail="El email ya está en uso")
         target.email = data.email
     if data.rol is not None:
+        # Un admin no puede degradarse a sí mismo
+        if usuario_id == user.id and data.rol != "admin":
+            raise HTTPException(status_code=403, detail="No puedes cambiar tu propio rol de admin.")
+        # Verificar que no quede el tenant sin ningún admin
+        if data.rol != "admin" and target.rol == "admin":
+            otros_admins = db.query(Usuario).filter(
+                Usuario.tenant_id == user.tenant_id,
+                Usuario.rol == "admin",
+                Usuario.id != usuario_id,
+                Usuario.activo == True,
+            ).count()
+            if otros_admins == 0:
+                raise HTTPException(status_code=403, detail="Debe haber al menos un administrador activo.")
         _ROLES_BASICO = {"admin", "cajero"}
         tenant = db.query(Tenant).filter(Tenant.id == user.tenant_id).first()
         if tenant and tenant.plan == "basico" and data.rol not in _ROLES_BASICO:
