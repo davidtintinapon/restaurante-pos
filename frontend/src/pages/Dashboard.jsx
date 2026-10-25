@@ -43,22 +43,30 @@ export default function Dashboard() {
   const [stockBajo, setStockBajo] = useState([])
 
 useEffect(() => {
+  const safe = (promise) => promise.catch(() => null)
+
   Promise.all([
     api.get('/reportes/dashboard'),
-    api.get('/reportes/ventas_diarias?dias=7'),
-    api.get('/reportes/platos_populares?limite=5'),
-    api.get('/carta/stock_bajo?umbral=5'),
+    safe(api.get('/reportes/ventas_diarias?dias=7')),
+    safe(api.get('/reportes/platos_populares?limite=5')),
+    safe(api.get('/carta/stock_bajo?umbral=5')),
   ]).then(([s, v, p, sb]) => {
-    setStats(s.data)
-    setVentas(v.data)
-    setPlatos(p.data)
-    setStockBajo(sb.data)
+    if (s) setStats(s.data)
+    if (v) setVentas(v.data)
+    if (p) setPlatos(p.data)
+    if (sb) setStockBajo(sb.data)
   }).finally(() => setLoading(false))
 }, [])
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
       <Spinner size="lg" />
+    </div>
+  )
+
+  if (!stats) return (
+    <div className="flex items-center justify-center h-64">
+      <p className="text-gray-500">Error al cargar el dashboard. Recarga la página.</p>
     </div>
   )
 
