@@ -270,7 +270,7 @@ export default function Configuracion() {
           {saving ? <Spinner size="sm" className="mx-auto" /> : 'Guardar configuración'}
         </button>
       </form>
-      </div>}
+      </div>
     </div>
   )
 }
