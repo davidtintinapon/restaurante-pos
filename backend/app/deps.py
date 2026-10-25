@@ -59,3 +59,18 @@ def require_cocina(user: Usuario = Depends(get_current_user)) -> Usuario:
     if user.rol not in ("admin", "cocinero"):
         raise HTTPException(status_code=403, detail="Acceso solo para cocina")
     return user
+
+def require_plan_pro(
+    user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Usuario:
+    """Requiere plan pro o premium. Plan básico no tiene acceso."""
+    if user.rol == "superadmin":
+        return user
+    tenant = db.query(Tenant).filter(Tenant.id == user.tenant_id).first()
+    if not tenant or tenant.plan not in ("pro", "premium"):
+        raise HTTPException(
+            status_code=403,
+            detail="Esta función no está disponible en el plan Básico. Mejora tu plan para acceder."
+        )
+    return user

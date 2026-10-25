@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session, joinedload
 from ..core.database import get_db
-from ..deps import require_cocina
+from ..deps import require_cocina, require_plan_pro
 from ..models import ItemPedido, Pedido, Usuario
 
 router = APIRouter(prefix="/cocina", tags=["cocina"])
@@ -11,6 +11,7 @@ router = APIRouter(prefix="/cocina", tags=["cocina"])
 def items_pendientes(
     db: Session = Depends(get_db),
     user: Usuario = Depends(require_cocina),
+    _plan: Usuario = Depends(require_plan_pro),
 ):
     items = db.query(ItemPedido).options(
         joinedload(ItemPedido.plato),
@@ -51,6 +52,7 @@ def items_pendientes(
 def historial_cocina(
     db: Session = Depends(get_db),
     user: Usuario = Depends(require_cocina),
+    _plan: Usuario = Depends(require_plan_pro),
 ):
     """Items ya listos/entregados del día — para referencia."""
     from datetime import datetime, timezone

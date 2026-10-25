@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import datetime, timezone, timedelta
 from ..core.database import get_db
-from ..deps import require_admin, get_current_user
+from ..deps import require_admin, get_current_user, require_plan_pro
 from ..models import Pedido, ItemPedido, Plato, Usuario, Mesa
 from ..models.gasto import GastoCaja
 
@@ -113,6 +113,7 @@ def ventas_diarias(
     fecha_fin: str = Query(default=None),
     db: Session = Depends(get_db),
     user: Usuario = Depends(require_admin),
+    _plan: Usuario = Depends(require_plan_pro),
 ):
     tid = user.tenant_id
     resultado = []
@@ -147,6 +148,7 @@ def platos_populares(
     limite: int = Query(default=10, ge=1, le=50),
     db: Session = Depends(get_db),
     user: Usuario = Depends(require_admin),
+    _plan: Usuario = Depends(require_plan_pro),
 ):
     tid = user.tenant_id
     mes_ini, mes_fin = _rango_mes()
@@ -176,6 +178,7 @@ def platos_populares(
 def metodos_pago(
     db: Session = Depends(get_db),
     user: Usuario = Depends(require_admin),
+    _plan: Usuario = Depends(require_plan_pro),
 ):
     tid = user.tenant_id
     mes_ini, mes_fin = _rango_mes()
@@ -203,6 +206,7 @@ def cierre_diario(
     fecha: str = Query(default=None),
     db: Session = Depends(get_db),
     user: Usuario = Depends(require_admin),
+    _plan: Usuario = Depends(require_plan_pro),
 ):
     tid = user.tenant_id
 
@@ -276,6 +280,7 @@ def reporte_rango(
     fecha_fin: str = Query(...),
     db: Session = Depends(get_db),
     user: Usuario = Depends(require_admin),
+    _plan: Usuario = Depends(require_plan_pro),
 ):
     """Reporte consolidado para un rango de fechas: ventas, gastos, caja neta."""
     tid = user.tenant_id
@@ -429,6 +434,7 @@ def pedidos_dia(
     fecha: str = Query(default=None),
     db: Session = Depends(get_db),
     user: Usuario = Depends(require_admin),
+    _plan: Usuario = Depends(require_plan_pro),
 ):
     from sqlalchemy.orm import joinedload
     tid = user.tenant_id

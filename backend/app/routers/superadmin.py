@@ -5,7 +5,7 @@ from ..core.database import get_db
 from ..core.security import hash_password
 from ..deps import require_superadmin
 from ..models import Tenant, Usuario
-from ..schemas.tenant import TenantCreate, TenantUpdate, TenantOut
+from ..schemas.tenant import TenantCreate, TenantUpdate, TenantOut, _PLAN_LIMITS
 from ..schemas.usuario import UsuarioOut
 
 router = APIRouter(prefix="/superadmin", tags=["superadmin"])
@@ -31,14 +31,19 @@ def crear_tenant(
     if existe:
         raise HTTPException(status_code=400, detail="El email ya está registrado")
 
+    # Derivar límites del plan (el superadmin puede sobreescribir)
+    limites = _PLAN_LIMITS.get(data.plan, _PLAN_LIMITS["basico"])
+    max_usuarios = data.max_usuarios if data.max_usuarios is not None else limites["max_usuarios"]
+    max_mesas    = data.max_mesas    if data.max_mesas    is not None else limites["max_mesas"]
+
     # Crear tenant
     tenant = Tenant(
         nombre=data.nombre,
         slug=data.slug,
         plan=data.plan,
         activo=True,
-        max_usuarios=data.max_usuarios,
-        max_mesas=data.max_mesas,
+        max_usuarios=max_usuarios,
+        max_mesas=max_mesas,
         vence_en=datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=30),
     )
     db.add(tenant)
