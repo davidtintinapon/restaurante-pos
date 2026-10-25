@@ -7,6 +7,7 @@ from ..deps import require_superadmin
 from ..models import Tenant, Usuario
 from ..schemas.tenant import TenantCreate, TenantUpdate, TenantOut, _PLAN_LIMITS
 from ..schemas.usuario import UsuarioOut
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/superadmin", tags=["superadmin"])
 
@@ -26,17 +27,14 @@ def crear_tenant(
     _: Usuario = Depends(require_superadmin),
 ):
     """Crea un tenant nuevo con su usuario admin."""
-    # Verificar email admin único
     existe = db.query(Usuario).filter(Usuario.email == data.admin_email).first()
     if existe:
         raise HTTPException(status_code=400, detail="El email ya está registrado")
 
-    # Derivar límites del plan (el superadmin puede sobreescribir)
     limites = _PLAN_LIMITS.get(data.plan, _PLAN_LIMITS["basico"])
     max_usuarios = data.max_usuarios if data.max_usuarios is not None else limites["max_usuarios"]
     max_mesas    = data.max_mesas    if data.max_mesas    is not None else limites["max_mesas"]
 
-    # Crear tenant
     tenant = Tenant(
         nombre=data.nombre,
         slug=data.slug,
@@ -49,7 +47,6 @@ def crear_tenant(
     db.add(tenant)
     db.flush()
 
-    # Crear admin del tenant
     admin = Usuario(
         tenant_id=tenant.id,
         nombre=data.admin_nombre,
@@ -88,13 +85,12 @@ def renovar_tenant(
     db: Session = Depends(get_db),
     _: Usuario = Depends(require_superadmin),
 ):
-    """Extiende el plan N días desde hoy (o desde vencimiento si aún no venció)."""
+    """Extiende el plan N dias desde hoy (o desde vencimiento si aun no vencio)."""
     tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant no encontrado")
 
     ahora = datetime.now(timezone.utc).replace(tzinfo=None)
-    # Si estaba suspendido, renovar siempre desde hoy
     if not tenant.activo:
         base = ahora
     else:
@@ -146,3 +142,51 @@ def eliminar_tenant(
     db.query(Usuario).filter(Usuario.tenant_id == tenant_id).update({"activo": False})
     db.commit()
     return {"ok": True}
+
+
+# -- Gestion de usuarios por superadmin -------------------------------------
+
+class SetRolBody(BaseModel):
+    rol: str  # "admin" | "cajero" | "cocina"
+
+
+@router.get("/usuarios/buscar")
+def buscar_usuario_por_email(
+    email: str,
+    db: Session = Depends(get_db),
+    _: Usuario = Depends(require_superadmin),
+):
+    """Busca un usuario por email (para obtener su ID)."""
+    usuario = db.query(Usuario).filter(Usuario.email == email).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    return {
+        "id": usuario.id,
+        "nombre": usuario.nombre,
+        "email": usuario.email,
+        "rol": usuario.rol,
+        "tenant_id": usuario.tenant_id,
+        "activo": usuario.activo,
+    }
+
+
+@router.patch("/usuarios/{usuario_id}/rol", response_model=UsuarioOut)
+def forzar_rol_usuario(
+    usuario_id: str,
+    body: SetRolBody,
+    db: Session = Depends(get_db),
+    _: Usuario = Depends(require_superadmin),
+):
+    """Superadmin puede forzar cualquier rol en cualquier usuario."""
+    roles_validos = {"admin", "cajero", "cocina"}
+    if body.rol not in roles_validos:
+        raise HTTPException(status_code=400, detail=f"Rol invalido. Opciones: {roles_validos}")
+
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    usuario.rol = body.rol
+    db.commit()
+    db.refresh(usuario)
+    return usuario
