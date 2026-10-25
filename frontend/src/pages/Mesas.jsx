@@ -205,7 +205,7 @@ export default function Mesas() {
     setSaving(true)
     try {
       if (editMesa) {
-        await api.patch(`/mesas/${editMesa.id}`, formMesa)
+        await api.patch(`/mesas/${editMesa.id}`, { ...formMesa, numero: Number(formMesa.numero), nombre: formMesa.nombre || null })
         toast('Mesa actualizada', 'success')
       } else {
         await api.post('/mesas/', { ...formMesa, numero: Number(formMesa.numero) })

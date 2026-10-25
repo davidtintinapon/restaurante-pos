@@ -8,6 +8,7 @@ class MesaCreate(BaseModel):
     zona: str = "salon"
 
 class MesaUpdate(BaseModel):
+    numero: Optional[int] = None
     nombre: Optional[str] = None
     capacidad: Optional[int] = None
     zona: Optional[str] = None
