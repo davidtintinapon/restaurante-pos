@@ -4,7 +4,13 @@ import { useToast } from '../context/ToastContext'
 import Modal from '../components/ui/Modal'
 import Spinner from '../components/ui/Spinner'
 
-const PLANES = ['basico', 'estandar', 'pro']
+const PLANES = ['basico', 'pro', 'premium']
+
+const PLAN_INFO = {
+  basico:  { label: 'Básico',  usuarios: 2,   mesas: 'Ilimitadas', roles: 'Admin, Cajero' },
+  pro:     { label: 'Pro',     usuarios: 5,   mesas: 'Ilimitadas', roles: 'Admin, Cajero, Mozo, Cocinero' },
+  premium: { label: 'Premium', usuarios: 999, mesas: 'Ilimitadas', roles: 'Todos los roles' },
+}
 
 function fmtFecha(dt) {
   if (!dt) return '—'
@@ -27,7 +33,6 @@ export default function Superadmin() {
   const [modalTenant, setModalTenant] = useState(false)
   const [form, setForm] = useState({
     nombre: '', slug: '', plan: 'basico',
-    max_usuarios: 10, max_mesas: 20,
     admin_nombre: '', admin_email: '', admin_password: '',
   })
   const [saving, setSaving] = useState(false)
@@ -50,6 +55,7 @@ export default function Superadmin() {
       await api.post('/superadmin/tenants', form)
       toast('Restaurante creado', 'success')
       setModalTenant(false)
+      setForm({ nombre: '', slug: '', plan: 'basico', admin_nombre: '', admin_email: '', admin_password: '' })
       cargar()
     } catch (err) {
       toast(err.response?.data?.detail || 'Error', 'error')
@@ -123,7 +129,8 @@ export default function Superadmin() {
                     {t.direccion && <p className="text-xs text-gray-500 truncate max-w-[200px]">{t.direccion}</p>}
                   </td>
                   <td className="px-4 py-3">
-                    <span className="capitalize text-sm text-gray-300">{t.plan}</span>
+                    <span className="capitalize text-sm text-gray-300">{PLAN_INFO[t.plan]?.label ?? t.plan}</span>
+                    <p className="text-xs text-gray-500">{t.max_usuarios} usuarios</p>
                   </td>
                   <td className="px-4 py-3">
                     <span className={`badge ${t.activo ? 'bg-green-900/50 text-green-300 border border-green-800' : 'bg-red-900/50 text-red-300 border border-red-800'}`}>
@@ -178,25 +185,39 @@ export default function Superadmin() {
                 onChange={e => setForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') }))} required />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="label">Plan</label>
-              <select className="input" value={form.plan}
-                onChange={e => setForm(f => ({ ...f, plan: e.target.value }))}>
-                {PLANES.map(p => <option key={p} value={p} className="bg-gray-800 capitalize">{p}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="label">Máx. usuarios</label>
-              <input type="number" className="input" min={1} value={form.max_usuarios}
-                onChange={e => setForm(f => ({ ...f, max_usuarios: Number(e.target.value) }))} />
-            </div>
-            <div>
-              <label className="label">Máx. mesas</label>
-              <input type="number" className="input" min={1} value={form.max_mesas}
-                onChange={e => setForm(f => ({ ...f, max_mesas: Number(e.target.value) }))} />
-            </div>
+
+          {/* Selector de plan + info automática */}
+          <div>
+            <label className="label">Plan</label>
+            <select className="input" value={form.plan}
+              onChange={e => setForm(f => ({ ...f, plan: e.target.value }))}>
+              {PLANES.map(p => (
+                <option key={p} value={p} className="bg-gray-800 capitalize">
+                  {PLAN_INFO[p].label}
+                </option>
+              ))}
+            </select>
+            {/* Info del plan seleccionado — calculada automáticamente */}
+            {form.plan && PLAN_INFO[form.plan] && (
+              <div className="mt-2 p-3 rounded-lg bg-gray-800/60 border border-gray-700 text-xs text-gray-400 grid grid-cols-3 gap-2">
+                <div>
+                  <span className="block text-gray-500 mb-0.5">Usuarios incluidos</span>
+                  <span className="text-gray-200 font-medium">
+                    {PLAN_INFO[form.plan].usuarios === 999 ? 'Ilimitados' : PLAN_INFO[form.plan].usuarios}
+                  </span>
+                </div>
+                <div>
+                  <span className="block text-gray-500 mb-0.5">Mesas</span>
+                  <span className="text-gray-200 font-medium">{PLAN_INFO[form.plan].mesas}</span>
+                </div>
+                <div>
+                  <span className="block text-gray-500 mb-0.5">Roles disponibles</span>
+                  <span className="text-gray-200 font-medium">{PLAN_INFO[form.plan].roles}</span>
+                </div>
+              </div>
+            )}
           </div>
+
           <div className="border-t border-gray-800 pt-4">
             <p className="text-sm font-semibold text-gray-300 mb-3">Usuario admin del restaurante</p>
             <div className="grid grid-cols-2 gap-3">
