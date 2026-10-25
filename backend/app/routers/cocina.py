@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session, joinedload
 from ..core.database import get_db
-from ..deps import require_cocina, require_plan_pro
+from ..deps import require_cocina
 from ..models import ItemPedido, Pedido, Usuario
 
 router = APIRouter(prefix="/cocina", tags=["cocina"])
@@ -11,8 +11,12 @@ router = APIRouter(prefix="/cocina", tags=["cocina"])
 def items_pendientes(
     db: Session = Depends(get_db),
     user: Usuario = Depends(require_cocina),
-    _plan: Usuario = Depends(require_plan_pro),
 ):
+    """
+    Pedidos activos en cocina — disponible en todos los planes.
+    La impresión física de ticket de cocina (pro/premium) se maneja
+    en el frontend según el plan del tenant.
+    """
     items = db.query(ItemPedido).options(
         joinedload(ItemPedido.plato),
         joinedload(ItemPedido.pedido).joinedload(Pedido.mesa),
@@ -52,9 +56,8 @@ def items_pendientes(
 def historial_cocina(
     db: Session = Depends(get_db),
     user: Usuario = Depends(require_cocina),
-    _plan: Usuario = Depends(require_plan_pro),
 ):
-    """Items ya listos/entregados del día — para referencia."""
+    """Items ya listos/entregados del día — disponible en todos los planes."""
     from datetime import datetime, timezone
     hoy = datetime.now(timezone.utc).date()
 
