@@ -44,7 +44,22 @@ def crear_usuario(
     if tenant and tenant.max_usuarios and total_usuarios >= tenant.max_usuarios:
         raise HTTPException(
             status_code=403,
-            detail=f"Límite de usuarios alcanzado ({tenant.max_usuarios}). Mejora tu plan."
+            detail=f"Límite de usuarios alcanzado ({tenant.max_usuarios}). Mejora tu plan para agregar más usuarios."
+        )
+
+    # Validar roles permitidos según plan
+    _ROLES_BASICO = {"admin", "cajero"}
+    _ROLES_TODOS  = {"admin", "cajero", "mozo", "cocinero"}
+
+    if tenant and tenant.plan == "basico" and data.rol not in _ROLES_BASICO:
+        raise HTTPException(
+            status_code=403,
+            detail="El plan Básico solo permite los roles admin y cajero. Mejora tu plan para agregar mozos o cocineros."
+        )
+    if data.rol not in _ROLES_TODOS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Rol '{data.rol}' no válido. Roles permitidos: admin, cajero, mozo, cocinero."
         )
 
     # Email único
