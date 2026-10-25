@@ -382,6 +382,7 @@ export default function Pedido() {
   // ── Ticket ────────────────────────────────────────────────────────────────
   const [modalTicket, setModalTicket] = useState(false)
   const [ticketData, setTicketData] = useState(null)   // { pedido, pagos, descuento, vuelto }
+  const [configRestaurante, setConfigRestaurante] = useState(null)
 
   const cargarPedido = useCallback(async () => {
     try {
@@ -404,6 +405,7 @@ export default function Pedido() {
   }
 
   useEffect(() => {
+    api.get('/configuracion/').then(r => setConfigRestaurante(r.data)).catch(() => {})
     Promise.all([cargarPedido(), cargarCarta()]).finally(() => setLoading(false))
   }, [mesaId, pedido_id])
 
@@ -595,10 +597,10 @@ export default function Pedido() {
     : `Mesa ${pedido?.numero_mesa || mesaNum}`
 
   const restauranteInfo = {
-    nombre: user?.nombre_restaurante || 'Restaurante',
-    ruc: user?.ruc || null,
-    direccion: user?.direccion || null,
-    pie: '¡Gracias por su visita!',
+    nombre: configRestaurante?.nombre_restaurante || 'Restaurante',
+    ruc: configRestaurante?.ruc || null,
+    direccion: configRestaurante?.direccion || null,
+    pie: configRestaurante?.pie_ticket || '¡Gracias por su visita!',
   }
 
   return (
