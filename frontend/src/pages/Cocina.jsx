@@ -52,7 +52,13 @@ export default function Cocina() {
     try {
       await api.patch(`/pedidos/${pedido_id}/items/${item_id}/estado`, { estado: siguiente })
       toast(siguiente === 'en_preparacion' ? 'En preparación' : '¡Listo!', 'success', 2000)
-      await cargar()
+      // Actualizar solo el ítem afectado sin reordenar la lista
+      setPedidos(prev => prev.map(p =>
+        p.pedido_id !== pedido_id ? p : {
+          ...p,
+          items: p.items.map(i => i.id === item_id ? { ...i, estado: siguiente } : i)
+        }
+      ).filter(p => p.items.some(i => i.estado !== 'listo')))
     } catch { toast('Error', 'error') }
     setUpdating(null)
   }
