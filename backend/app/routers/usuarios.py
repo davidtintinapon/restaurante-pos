@@ -1,12 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 from ..core.database import get_db
-from ..core.security import hash_password
+from ..core.security import hash_password, verify_password
 from ..deps import get_current_user, require_admin
 from ..models import Usuario, Tenant
 from ..schemas.usuario import UsuarioCreate, UsuarioUpdate, UsuarioOut
 
 router = APIRouter(prefix="/usuarios", tags=["usuarios"])
+
+
+class CambiarPasswordRequest(BaseModel):
+    password_actual: str
+    password_nueva: str
+
 
 @router.get("/me", response_model=UsuarioOut)
 def mi_perfil(
@@ -14,6 +21,25 @@ def mi_perfil(
     user: Usuario = Depends(get_current_user),
 ):
     return user
+
+
+@router.patch("/me/password")
+def cambiar_password(
+    data: CambiarPasswordRequest,
+    db: Session = Depends(get_db),
+    user: Usuario = Depends(get_current_user),
+):
+    """Permite a cualquier usuario cambiar su propia contraseña."""
+    if not verify_password(data.password_actual, user.password_hash):
+        raise HTTPException(status_code=400, detail="La contraseña actual es incorrecta")
+
+    if len(data.password_nueva) < 6:
+        raise HTTPException(status_code=400, detail="La nueva contraseña debe tener al menos 6 caracteres")
+
+    user.password_hash = hash_password(data.password_nueva)
+    db.commit()
+    return {"ok": True, "mensaje": "Contraseña actualizada correctamente"}
+
 
 @router.get("/", response_model=list[UsuarioOut])
 def listar_usuarios(
@@ -33,7 +59,6 @@ def crear_usuario(
     db: Session = Depends(get_db),
     user: Usuario = Depends(require_admin),
 ):
-    # Verificar límite del plan
     tenant = db.query(Tenant).filter(Tenant.id == user.tenant_id).first()
     total_usuarios = db.query(Usuario).filter(
         Usuario.tenant_id == user.tenant_id,
@@ -47,7 +72,6 @@ def crear_usuario(
             detail=f"Límite de usuarios alcanzado ({tenant.max_usuarios}). Mejora tu plan para agregar más usuarios."
         )
 
-    # Validar roles permitidos según plan
     _ROLES_BASICO = {"admin", "cajero"}
     _ROLES_TODOS  = {"admin", "cajero", "mozo", "cocinero"}
 
@@ -62,7 +86,6 @@ def crear_usuario(
             detail=f"Rol '{data.rol}' no válido. Roles permitidos: admin, cajero, mozo, cocinero."
         )
 
-    # Email único
     existe = db.query(Usuario).filter(Usuario.email == data.email).first()
     if existe:
         raise HTTPException(status_code=400, detail="El email ya está registrado")
@@ -98,7 +121,6 @@ def actualizar_usuario(
     if data.nombre is not None:
         target.nombre = data.nombre
     if data.email is not None:
-        # Verificar email único
         existe = db.query(Usuario).filter(
             Usuario.email == data.email,
             Usuario.id != usuario_id
@@ -107,6 +129,10 @@ def actualizar_usuario(
             raise HTTPException(status_code=400, detail="El email ya está en uso")
         target.email = data.email
     if data.rol is not None:
+        _ROLES_BASICO = {"admin", "cajero"}
+        tenant = db.query(Tenant).filter(Tenant.id == user.tenant_id).first()
+        if tenant and tenant.plan == "basico" and data.rol not in _ROLES_BASICO:
+            raise HTTPException(status_code=403, detail="El plan Básico solo permite los roles admin y cajero.")
         target.rol = data.rol
     if data.password is not None:
         target.password_hash = hash_password(data.password)
@@ -122,7 +148,6 @@ def eliminar_usuario(
     db: Session = Depends(get_db),
     user: Usuario = Depends(require_admin),
 ):
-    # No puede eliminarse a sí mismo
     if usuario_id == user.id:
         raise HTTPException(status_code=400, detail="No puedes eliminarte a ti mismo")
 
