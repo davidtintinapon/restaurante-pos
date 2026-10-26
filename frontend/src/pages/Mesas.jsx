@@ -134,11 +134,16 @@ export default function Mesas() {
   })
 
   const handleSelectMesa = mesa => {
-    if (mesa.estado === 'libre') {
-      navigate(`/pedidos/nuevo?mesa_id=${mesa.id}&mesa_num=${mesa.numero}`)
-    } else if (mesa.estado === 'ocupada') {
+    if (mesa.estado === 'ocupada') {
       navigate(`/pedidos/mesa/${mesa.id}`)
+    } else if (mesa.estado === 'libre') {
+      if (isAdmin || isCajero) {
+        setModalAccion(mesa)
+      } else {
+        navigate(`/pedidos/nuevo?mesa_id=${mesa.id}&mesa_num=${mesa.numero}`)
+      }
     } else {
+      // reservada u otro estado
       setModalAccion(mesa)
     }
   }
@@ -466,18 +471,53 @@ export default function Mesas() {
         </form>
       </Modal>
 
-      {/* Modal acciones mesa especial */}
+      {/* Modal acciones mesa */}
       <Modal open={!!modalAccion} onClose={() => setModalAccion(null)} title={`Mesa ${modalAccion?.numero}`}>
         {modalAccion && (
-          <div className="space-y-3">
-            <p className="text-gray-400 text-sm">Estado actual: <Badge value={modalAccion.estado} /></p>
-            <p className="text-gray-400 text-sm">Cambiar a:</p>
-            <div className="grid grid-cols-2 gap-2">
-              {ESTADOS.filter(e => e !== modalAccion.estado && (e !== 'reservada' || isAdmin || isCajero)).map(e => (
-                <button key={e} onClick={() => cambiarEstado(modalAccion, e)}
-                  className="btn-secondary capitalize">{e.replace('_', ' ')}</button>
-              ))}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-400 text-sm">Estado:</span>
+              <Badge value={modalAccion.estado} />
+              {modalAccion.capacidad && (
+                <span className="text-gray-500 text-xs ml-auto">{modalAccion.capacidad} personas</span>
+              )}
             </div>
+
+            {/* Mesa libre: nuevo pedido o reservar */}
+            {modalAccion.estado === 'libre' && (
+              <div className="space-y-2">
+                <button
+                  onClick={() => { setModalAccion(null); navigate(`/pedidos/nuevo?mesa_id=${modalAccion.id}&mesa_num=${modalAccion.numero}`) }}
+                  className="btn-primary w-full">
+                  Nuevo pedido
+                </button>
+                {(isAdmin || isCajero) && (
+                  <button
+                    onClick={() => cambiarEstado(modalAccion, 'reservada')}
+                    className="btn-secondary w-full">
+                    Reservar mesa
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Mesa reservada: iniciar pedido o cancelar reserva */}
+            {modalAccion.estado === 'reservada' && (
+              <div className="space-y-2">
+                <button
+                  onClick={() => { setModalAccion(null); navigate(`/pedidos/nuevo?mesa_id=${modalAccion.id}&mesa_num=${modalAccion.numero}`) }}
+                  className="btn-primary w-full">
+                  Iniciar pedido
+                </button>
+                {(isAdmin || isCajero) && (
+                  <button
+                    onClick={() => cambiarEstado(modalAccion, 'libre')}
+                    className="btn-secondary w-full">
+                    Cancelar reserva
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
       </Modal>
