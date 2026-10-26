@@ -7,14 +7,13 @@ import Badge from '../components/ui/Badge'
 import Modal from '../components/ui/Modal'
 import Spinner from '../components/ui/Spinner'
 
-const ESTADOS = ['libre', 'ocupada', 'reservada', 'cuenta_pedida']
+const ESTADOS = ['libre', 'ocupada', 'reservada']
 
 function MesaCard({ mesa, onSelect, isAdmin }) {
   const colores = {
     libre:         'border-green-700/50 hover:border-green-500',
     ocupada:       'border-red-700/50 hover:border-red-500',
     reservada:     'border-yellow-700/50 hover:border-yellow-500',
-    cuenta_pedida: 'border-purple-700/50 hover:border-purple-500',
   }
   return (
     <div onClick={() => onSelect(mesa)}
