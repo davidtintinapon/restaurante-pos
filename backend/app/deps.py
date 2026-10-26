@@ -56,7 +56,7 @@ def require_staff(user: Usuario = Depends(get_current_user)) -> Usuario:
 
 def require_cocina(user: Usuario = Depends(get_current_user)) -> Usuario:
     """Admin o cocinero"""
-    if user.rol not in ("admin", "cocinero"):
+    if user.rol not in ("admin", "cajero", "cocinero"):
         raise HTTPException(status_code=403, detail="Acceso solo para cocina")
     return user
 
