@@ -604,7 +604,7 @@ export default function Pedido() {
   }
 
   return (
-    <div className="max-w-7xl h-[calc(100vh-3.5rem-3rem)] flex flex-col gap-4">
+    <div className="max-w-7xl flex flex-col gap-4" style={{height: "calc(100dvh - 3.5rem - 3rem)"}}>
       {/* Header */}
       <div className="flex items-start justify-between flex-shrink-0 flex-wrap gap-y-2">
         <div className="flex items-center gap-3">
@@ -691,7 +691,7 @@ export default function Pedido() {
           {carrito.length > 0 && (
             <div className="card p-4 flex flex-col gap-3">
               <h3 className="text-sm font-semibold text-gray-300">Por agregar</h3>
-              <div className="space-y-3 max-h-52 overflow-y-auto">
+              <div className="space-y-3 max-h-36 sm:max-h-52 overflow-y-auto">
                 {carrito.map(x => (
                   <div key={x.plato.id} className="flex flex-col gap-1">
                     <div className="flex items-center gap-2 text-sm">
@@ -712,6 +712,7 @@ export default function Pedido() {
                       className="input text-xs py-1 px-2 ml-7"
                       placeholder="Nota: sin tomate, sin sal..."
                       value={x.nota}
+                      onFocus={e => { setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300) }}
                       onChange={e => setCarrito(c => c.map(i => i.plato.id === x.plato.id ? { ...i, nota: e.target.value } : i))}
                     />
                   </div>
