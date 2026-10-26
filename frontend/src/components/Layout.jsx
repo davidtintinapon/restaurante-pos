@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useLocation, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
@@ -23,40 +23,16 @@ const ICONS = {
   logout:       'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1',
   menu:         'M4 6h16M4 12h16M4 18h16',
   chevron:      'M15 19l-7-7 7-7',
+  x:            'M6 18L18 6M6 6l12 12',
 }
 
-// ── Logo Zyquid ───────────────────────────────────────────────
-// Ícono "Z" solo (sidebar colapsado)
-const ZyquidIcon = ({ className = 'w-10 h-10' }) => (
-  <svg className={className} viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="110" height="110" rx="10" fill="#0B2545"/>
-    <polygon points="14,14 96,14 96,30 34,82 64,82 64,96 14,96 14,82 76,30 14,30" fill="#FFFFFF"/>
-    <polygon points="72,82 91,82 110,104 92,104" fill="#6E9BCB"/>
-  </svg>
-)
-
-// Logo completo con wordmark "ZYQUID" (sidebar abierto)
-const ZyquidLogo = ({ className = 'h-10' }) => (
-  <svg className={className} viewBox="0 0 300 72" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <g>
-      <polygon points="2,2 46,2 46,13 18,42 33,42 33,54 2,54 2,42 31,13 2,13" fill="#FFFFFF"/>
-      <polygon points="30,42 40,42 50,54 40,54" fill="#6E9BCB"/>
-    </g>
-    <text x="62" y="42" fontFamily="'Inter', 'Segoe UI', system-ui, sans-serif"
-          fontWeight="800" fontSize="30" letterSpacing="5" fill="#FFFFFF">
-      ZYQUID
-    </text>
-  </svg>
-)
-
-// Grupos de navegación por función
 const NAV_GROUPS = [
   {
     label: 'Operaciones',
     items: [
       ['Dashboard',   '/dashboard',      ['admin', 'cajero', 'superadmin'], 'dashboard'],
       ['Mesas',       '/mesas',          ['admin', 'cajero', 'mozo'],       'mesas'],
-      ['Cocina',      '/cocina',         ['admin', 'cocinero'],             'cocina',   true],
+      ['Cocina',      '/cocina',         ['admin', 'cocinero'],             'cocina'],
     ],
   },
   {
@@ -70,7 +46,7 @@ const NAV_GROUPS = [
   {
     label: 'Análisis',
     items: [
-      ['Reportes',    '/reportes',       ['admin'],                         'reportes', true],
+      ['Reportes',    '/reportes',       ['admin'],                         'reportes'],
     ],
   },
   {
@@ -82,132 +58,191 @@ const NAV_GROUPS = [
   },
 ]
 
+// Encuentra el label de la ruta activa para el topbar móvil
+function usePageTitle(rol) {
+  const location = useLocation()
+  for (const group of NAV_GROUPS) {
+    for (const [label, path, roles] of group.items) {
+      if (roles.includes(rol) && location.pathname.startsWith(path)) return label
+    }
+  }
+  return 'RestaurantePOS'
+}
+
 export default function Layout() {
   const { user, logout } = useAuth()
   const location = useLocation()
-  const [sideOpen, setSideOpen] = useState(true)
-
   const rolUser = user?.rol
+
+  // En móvil: sidebar cerrado por defecto; en desktop: abierto
+  const [sideOpen, setSideOpen] = useState(window.innerWidth >= 768)
+  // En móvil, el sidebar es un drawer con overlay
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const pageTitle = usePageTitle(rolUser)
+
+  // Cerrar sidebar al navegar en móvil
+  useEffect(() => {
+    if (window.innerWidth < 768) setSideOpen(false)
+  }, [location.pathname])
+
+  // Ajustar al cambiar tamaño de ventana
+  useEffect(() => {
+    const handler = () => {
+      if (window.innerWidth >= 768) setSideOpen(true)
+      else setSideOpen(false)
+    }
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
+  }, [])
+
+  const SidebarContent = () => (
+    <>
+      {/* Logo */}
+      <div className="flex items-center gap-3 px-4 py-[18px] border-b border-gray-800/80">
+        <span className="text-xl flex-shrink-0 select-none">🍽️</span>
+        <div className="min-w-0">
+          <p className="font-bold text-gray-100 text-sm leading-tight truncate">RestaurantePOS</p>
+          <p className="text-[10px] text-gray-500 uppercase tracking-widest font-medium">Sistema de gestión</p>
+        </div>
+        {/* Botón cerrar en móvil */}
+        <button
+          onClick={() => setSideOpen(false)}
+          className="ml-auto md:hidden p-1 rounded-md text-gray-500 hover:text-gray-200 hover:bg-gray-800 transition-colors">
+          <Icon d={ICONS.x} className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 py-3 overflow-y-auto overflow-x-hidden space-y-4">
+        {NAV_GROUPS.map(group => {
+          const visibles = group.items.filter(([,, roles]) => roles.includes(rolUser))
+          if (visibles.length === 0) return null
+          return (
+            <div key={group.label}>
+              <p className="section-title">{group.label}</p>
+              {visibles.map(([label, path,, iconKey]) => {
+                const active = location.pathname.startsWith(path)
+                return (
+                  <Link
+                    key={path}
+                    to={path}
+                    className={`relative flex items-center gap-3 mx-2 rounded-lg mb-0.5
+                                px-3 py-2.5 text-sm font-medium transition-all duration-100
+                                ${active
+                                  ? 'bg-brand-500/15 text-brand-400'
+                                  : 'text-gray-500 hover:text-gray-200 hover:bg-gray-800/60'}`}
+                  >
+                    {active && (
+                      <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] bg-brand-500 rounded-r-full" />
+                    )}
+                    <span className={`flex-shrink-0 ${active ? 'text-brand-400' : ''}`}>
+                      <Icon d={ICONS[iconKey]} className="w-[18px] h-[18px]" />
+                    </span>
+                    <span className="truncate">{label}</span>
+                  </Link>
+                )
+              })}
+            </div>
+          )
+        })}
+      </nav>
+
+      {/* Usuario + logout */}
+      <div className="border-t border-gray-800/80 p-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-full bg-brand-500/20 ring-1 ring-brand-500/30
+                          flex items-center justify-center
+                          text-brand-400 font-bold text-sm flex-shrink-0">
+            {user?.nombre?.[0]?.toUpperCase()}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-gray-200 truncate leading-tight">{user?.nombre}</p>
+            <p className="text-[11px] text-gray-500 capitalize">{user?.rol}</p>
+          </div>
+        </div>
+        <button
+          onClick={logout}
+          className="mt-2.5 w-full flex items-center gap-2 px-2 py-1.5 rounded-md
+                     text-xs text-gray-500 hover:text-red-400 hover:bg-red-500/10
+                     transition-all duration-150 group">
+          <Icon d={ICONS.logout} className="w-3.5 h-3.5 group-hover:text-red-400" />
+          <span>Cerrar sesión</span>
+        </button>
+      </div>
+    </>
+  )
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-950">
 
-      {/* ── Sidebar ─────────────────────────────────────── */}
-      <aside className={`${sideOpen ? 'w-58' : 'w-[62px]'} flex-shrink-0
-                         bg-gray-900 border-r border-gray-800/80
-                         flex flex-col transition-all duration-200 ease-out z-20`}
-             style={{ width: sideOpen ? '232px' : '62px' }}>
+      {/* ── Overlay móvil ───────────────────────────────── */}
+      {sideOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-30 md:hidden"
+          onClick={() => setSideOpen(false)}
+        />
+      )}
 
-        {/* Logo */}
-        <div className={`flex items-center border-b border-gray-800/80
-                         ${sideOpen ? 'px-4 py-[18px] gap-3' : 'py-[18px] justify-center'}`}>
-          {/* Ícono Z — siempre visible */}
-          <svg width="36" height="36" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
-            <rect width="110" height="110" rx="10" fill="#0B2545"/>
-            <polygon points="14,14 96,14 96,30 34,82 64,82 64,96 14,96 14,82 76,30 14,30" fill="#FFFFFF"/>
-            <polygon points="72,82 91,82 110,104 92,104" fill="#6E9BCB"/>
-          </svg>
-          {/* Wordmark — solo cuando está abierto */}
-          {sideOpen && (
-            <span style={{
-              fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
-              fontWeight: 800,
-              fontSize: '18px',
-              letterSpacing: '5px',
-              color: '#FFFFFF',
-              paddingLeft: '2px',
-            }}>
-              ZYQUID
-            </span>
+      {/* ── Sidebar — drawer en móvil, fijo en desktop ── */}
+      <aside className={`
+        fixed md:relative inset-y-0 left-0 z-40
+        w-[232px] flex-shrink-0
+        bg-gray-900 border-r border-gray-800/80
+        flex flex-col
+        transition-transform duration-200 ease-out
+        ${sideOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:w-[62px]'}
+      `}>
+        {/* Desktop colapsado: solo iconos */}
+        <div className={sideOpen ? 'flex flex-col h-full' : 'hidden md:flex md:flex-col md:h-full'}>
+          {sideOpen ? (
+            <SidebarContent />
+          ) : (
+            /* Sidebar colapsado en desktop */
+            <>
+              <div className="flex items-center justify-center py-[18px] border-b border-gray-800/80">
+                <span className="text-xl select-none">🍽️</span>
+              </div>
+              <nav className="flex-1 py-3 overflow-y-auto space-y-4">
+                {NAV_GROUPS.map(group => {
+                  const visibles = group.items.filter(([,, roles]) => roles.includes(rolUser))
+                  if (visibles.length === 0) return null
+                  return (
+                    <div key={group.label}>
+                      <div className="mx-3 border-t border-gray-800/60 mb-1" />
+                      {visibles.map(([label, path,, iconKey]) => {
+                        const active = location.pathname.startsWith(path)
+                        return (
+                          <Link key={path} to={path} title={label}
+                            className={`relative flex items-center justify-center mx-2 rounded-lg mb-0.5
+                                        py-2.5 transition-all duration-100
+                                        ${active ? 'bg-brand-500/15 text-brand-400' : 'text-gray-500 hover:text-gray-200 hover:bg-gray-800/60'}`}>
+                            {active && <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] bg-brand-500 rounded-r-full" />}
+                            <Icon d={ICONS[iconKey]} className="w-[18px] h-[18px]" />
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  )
+                })}
+              </nav>
+              <div className="border-t border-gray-800/80 p-3 flex justify-center">
+                <div className="w-8 h-8 rounded-full bg-brand-500/20 ring-1 ring-brand-500/30
+                                flex items-center justify-center text-brand-400 font-bold text-sm">
+                  {user?.nombre?.[0]?.toUpperCase()}
+                </div>
+              </div>
+            </>
           )}
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 py-3 overflow-y-auto overflow-x-hidden space-y-4">
-          {NAV_GROUPS.map(group => {
-            const planUser = user?.plan || 'basico'
-            const planPro = ['pro', 'premium'].includes(planUser)
-            const visibles = group.items.filter(([,, roles, , soloProPlus]) => {
-              if (!roles.includes(rolUser)) return false
-              if (soloProPlus && !planPro) return false
-              return true
-            })
-            if (visibles.length === 0) return null
-
-            return (
-              <div key={group.label}>
-                {sideOpen && (
-                  <p className="section-title">{group.label}</p>
-                )}
-                {!sideOpen && (
-                  <div className="mx-3 border-t border-gray-800/60 mb-1" />
-                )}
-
-                {visibles.map(([label, path,, iconKey]) => {
-                  const active = location.pathname.startsWith(path)
-                  return (
-                    <Link
-                      key={path}
-                      to={path}
-                      title={!sideOpen ? label : undefined}
-                      className={`relative flex items-center gap-3 mx-2 rounded-lg mb-0.5
-                                  text-sm font-medium transition-all duration-100
-                                  ${sideOpen ? 'px-3 py-2.5' : 'px-0 py-2.5 justify-center'}
-                                  ${active
-                                    ? 'bg-brand-500/15 text-brand-400'
-                                    : 'text-gray-500 hover:text-gray-200 hover:bg-gray-800/60'}`}
-                    >
-                      {active && (
-                        <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] bg-brand-500 rounded-r-full" />
-                      )}
-
-                      <span className={`flex-shrink-0 ${active ? 'text-brand-400' : ''}`}>
-                        <Icon d={ICONS[iconKey]} className="w-[18px] h-[18px]" />
-                      </span>
-
-                      {sideOpen && (
-                        <span className="truncate">{label}</span>
-                      )}
-                    </Link>
-                  )
-                })}
-              </div>
-            )
-          })}
-        </nav>
-
-        {/* Usuario + logout */}
-        <div className="border-t border-gray-800/80 p-3">
-          <div className={`flex items-center gap-2.5 ${!sideOpen ? 'justify-center' : ''}`}>
-            <div className="w-8 h-8 rounded-full bg-brand-500/20 ring-1 ring-brand-500/30
-                            flex items-center justify-center
-                            text-brand-400 font-bold text-sm flex-shrink-0">
-              {user?.nombre?.[0]?.toUpperCase()}
-            </div>
-
-            {sideOpen && (
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-200 truncate leading-tight">{user?.nombre}</p>
-                <p className="text-[11px] text-gray-500 capitalize">{user?.rol}</p>
-              </div>
-            )}
-          </div>
-
-          {sideOpen && (
-            <button
-              onClick={logout}
-              className="mt-2.5 w-full flex items-center gap-2 px-2 py-1.5 rounded-md
-                         text-xs text-gray-500 hover:text-red-400 hover:bg-red-500/10
-                         transition-all duration-150 group">
-              <Icon d={ICONS.logout} className="w-3.5 h-3.5 group-hover:text-red-400" />
-              <span>Cerrar sesión</span>
-            </button>
-          )}
+        {/* Sidebar móvil abierto */}
+        <div className={sideOpen ? 'flex flex-col h-full md:hidden' : 'hidden'}>
+          <SidebarContent />
         </div>
       </aside>
 
       {/* ── Main ────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
 
         {/* Topbar */}
         <header className="h-14 bg-gray-950 border-b border-gray-800/80
@@ -221,11 +256,15 @@ export default function Layout() {
 
           <div className="w-px h-5 bg-gray-800 flex-shrink-0" />
 
-          <span className="text-gray-500 text-sm capitalize">
+          {/* En desktop: fecha. En móvil: nombre de página */}
+          <span className="text-gray-500 text-sm capitalize hidden sm:block">
             {new Date().toLocaleDateString('es-PE', {
               weekday: 'long', day: 'numeric', month: 'long',
               timeZone: 'America/Lima'
             })}
+          </span>
+          <span className="text-gray-200 text-sm font-semibold sm:hidden truncate">
+            {pageTitle}
           </span>
 
           <div className="flex-1" />
@@ -235,8 +274,8 @@ export default function Layout() {
           </span>
         </header>
 
-        {/* Contenido de página */}
-        <main className="flex-1 overflow-y-auto p-6 bg-gray-950">
+        {/* Contenido */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-950">
           <div className="max-w-7xl mx-auto">
             <Outlet />
           </div>
