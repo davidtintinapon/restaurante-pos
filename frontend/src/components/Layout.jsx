@@ -235,10 +235,6 @@ export default function Layout() {
           )}
         </div>
 
-        {/* Sidebar móvil abierto */}
-        <div className={sideOpen ? 'flex flex-col h-full md:hidden' : 'hidden'}>
-          <SidebarContent />
-        </div>
       </aside>
 
       {/* ── Main ────────────────────────────────────────── */}
