@@ -81,7 +81,7 @@ function DeliveryCard({ pedido, onClick }) {
 }
 
 export default function Mesas() {
-  const { isAdmin } = useAuth()
+  const { isAdmin, isCajero, isMozo } = useAuth()
   const toast = useToast()
   const navigate = useNavigate()
 
@@ -268,26 +268,30 @@ export default function Mesas() {
             ${tab === 'salon' ? 'bg-brand-500 text-white' : 'text-gray-400 hover:text-gray-100'}`}>
           Salón
         </button>
-        <button onClick={() => setTab('llevar')}
-          className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-2
-            ${tab === 'llevar' ? 'bg-brand-500 text-white' : 'text-gray-400 hover:text-gray-100'}`}>
-          LLEVAR
-          {pedidosLlevar.length > 0 && (
-            <span className="bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-              {pedidosLlevar.length}
-            </span>
-          )}
-        </button>
-        <button onClick={() => setTab('delivery')}
-          className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-2
-            ${tab === 'delivery' ? 'bg-brand-500 text-white' : 'text-gray-400 hover:text-gray-100'}`}>
-          Delivery
-          {pedidosDelivery.length > 0 && (
-            <span className="bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-              {pedidosDelivery.length}
-            </span>
-          )}
-        </button>
+        {!isMozo && (
+          <button onClick={() => setTab('llevar')}
+            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-2
+              ${tab === 'llevar' ? 'bg-brand-500 text-white' : 'text-gray-400 hover:text-gray-100'}`}>
+            LLEVAR
+            {pedidosLlevar.length > 0 && (
+              <span className="bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                {pedidosLlevar.length}
+              </span>
+            )}
+          </button>
+        )}
+        {!isMozo && (
+          <button onClick={() => setTab('delivery')}
+            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-2
+              ${tab === 'delivery' ? 'bg-brand-500 text-white' : 'text-gray-400 hover:text-gray-100'}`}>
+            Delivery
+            {pedidosDelivery.length > 0 && (
+              <span className="bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                {pedidosDelivery.length}
+              </span>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Vista Salón */}
