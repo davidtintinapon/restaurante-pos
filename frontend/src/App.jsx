@@ -20,7 +20,7 @@ import GastosCaja          from './pages/GastosCaja'
 
 const ADMIN    = ['admin', 'superadmin']
 const STAFF    = ['admin', 'cajero', 'mozo', 'superadmin']
-const COCINA_R = ['admin', 'cocinero', 'superadmin']
+const COCINA_R = ['admin', 'cajero', 'cocinero', 'superadmin']
 const ALL      = ['admin', 'cajero', 'mozo', 'cocinero', 'superadmin']
 
 function DashboardRouter() {
