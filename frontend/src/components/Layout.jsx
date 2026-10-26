@@ -32,7 +32,7 @@ const NAV_GROUPS = [
     items: [
       ['Dashboard',   '/dashboard',      ['admin', 'cajero', 'superadmin'], 'dashboard'],
       ['Mesas',       '/mesas',          ['admin', 'cajero', 'mozo'],       'mesas'],
-      ['Cocina',      '/cocina',         ['admin', 'cocinero'],             'cocina'],
+      ['Cocina',      '/cocina',         ['admin', 'cajero', 'cocinero'],   'cocina'],
     ],
   },
   {
