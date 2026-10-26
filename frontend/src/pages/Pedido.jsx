@@ -357,7 +357,7 @@ export default function Pedido() {
   const { mesa_id, pedido_id } = useParams()
   const [search] = useSearchParams()
   const navigate = useNavigate()
-  const { isAdmin, user } = useAuth()
+  const { isAdmin, isMozo, user } = useAuth()
   const toast = useToast()
 
   const mesaId  = mesa_id || search.get('mesa_id')
@@ -618,7 +618,7 @@ export default function Pedido() {
           )}
         </div>
         <div className="flex gap-2 flex-wrap">
-          {!pedido && !esLlevar && (
+          {!pedido && !esLlevar && !isMozo && (
             <button onClick={() => setModalDelivery(true)} className="btn-secondary">
               Nuevo Delivery
             </button>
