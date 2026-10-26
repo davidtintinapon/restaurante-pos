@@ -23,7 +23,7 @@ export default function Carta() {
   const [catParaPlato, setCatParaPlato] = useState(null)
   const [formPlato, setFormPlato] = useState({
     nombre: '', descripcion: '', precio: '', categoria_id: '',
-    tiene_stock: false, stock: 0
+    tiene_stock: false, stock: 0, disponible: true
   })
   const [savingPlato, setSavingPlato] = useState(false)
 
@@ -81,6 +81,7 @@ export default function Carta() {
           categoria_id: plato.categoria_id,
           tiene_stock: plato.tiene_stock || false,
           stock: plato.stock || 0,
+          disponible: plato.disponible !== false,
         }
       : { nombre: '', descripcion: '', precio: '', categoria_id: cat.id, tiene_stock: false, stock: 0 })
     setModalPlato(true)
@@ -287,6 +288,23 @@ export default function Carta() {
               </div>
             )}
           </div>
+
+          {/* Disponible (solo al editar) */}
+          {editPlato && (
+            <div className="flex items-center justify-between border border-gray-700 rounded-lg p-4">
+              <div>
+                <p className="text-sm font-medium text-gray-200">Disponible en carta</p>
+                <p className="text-xs text-gray-500">Los clientes pueden pedirlo</p>
+              </div>
+              <button type="button"
+                onClick={() => setFormPlato(f => ({ ...f, disponible: !f.disponible }))}
+                className={`w-10 h-6 rounded-full transition-colors relative flex-shrink-0
+                  ${formPlato.disponible ? 'bg-brand-500' : 'bg-gray-700'}`}>
+                <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all
+                  ${formPlato.disponible ? 'left-5' : 'left-1'}`} />
+              </button>
+            </div>
+          )}
 
           <div className="flex gap-3 pt-2">
             <button type="submit" className="btn-primary flex-1" disabled={savingPlato}>
