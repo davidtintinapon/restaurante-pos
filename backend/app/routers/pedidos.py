@@ -433,7 +433,7 @@ def cerrar_pedido(
     pedido.numero_ticket = _siguiente_numero_ticket(user.tenant_id, db)
 
     if data.descuento and data.descuento > 0:
-        pedido.total = max(0, (pedido.total or 0) - data.descuento)
+        pedido.total = max(0, float(pedido.total or 0) - float(data.descuento))
 
     # ── Descontar stock (dentro de la misma transacción) ─────────────────────
     # Si falla aquí, el pedido NO queda cerrado ni el stock parcialmente descontado.
@@ -491,7 +491,7 @@ def eliminar_item(
     if item.estado != "pendiente":
         raise HTTPException(status_code=400, detail="Solo se pueden eliminar items pendientes")
 
-    pedido.total = max(0, (pedido.total or 0) - item.precio_unitario * item.cantidad)
+    pedido.total = max(0, float(pedido.total or 0) - float(item.precio_unitario) * item.cantidad)
     db.delete(item)
     db.commit()
     return _pedido_out(_load_pedido(pedido_id, user.tenant_id, db))
