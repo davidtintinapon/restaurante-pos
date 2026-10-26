@@ -45,7 +45,7 @@ export default function Dashboard() {
   useEffect(() => {
     const safe = (promise) => promise.catch(() => null)
 
-    Promise.all([
+    const cargar = () => Promise.all([
       api.get('/reportes/dashboard'),
       safe(api.get('/reportes/ventas_diarias?dias=7')),
       safe(api.get('/reportes/platos_populares?limite=5')),
@@ -56,6 +56,10 @@ export default function Dashboard() {
       if (p) setPlatos(p.data)
       if (sb) setStockBajo(sb.data)
     }).finally(() => setLoading(false))
+
+    cargar()
+    const intervalo = setInterval(cargar, 30000)
+    return () => clearInterval(intervalo)
   }, [])
 
   if (loading) return (
