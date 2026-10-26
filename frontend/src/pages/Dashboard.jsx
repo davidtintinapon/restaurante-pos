@@ -42,21 +42,21 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [stockBajo, setStockBajo] = useState([])
 
-useEffect(() => {
-  const safe = (promise) => promise.catch(() => null)
+  useEffect(() => {
+    const safe = (promise) => promise.catch(() => null)
 
-  Promise.all([
-    api.get('/reportes/dashboard'),
-    safe(api.get('/reportes/ventas_diarias?dias=7')),
-    safe(api.get('/reportes/platos_populares?limite=5')),
-    safe(api.get('/carta/stock_bajo?umbral=5')),
-  ]).then(([s, v, p, sb]) => {
-    if (s) setStats(s.data)
-    if (v) setVentas(v.data)
-    if (p) setPlatos(p.data)
-    if (sb) setStockBajo(sb.data)
-  }).finally(() => setLoading(false))
-}, [])
+    Promise.all([
+      api.get('/reportes/dashboard'),
+      safe(api.get('/reportes/ventas_diarias?dias=7')),
+      safe(api.get('/reportes/platos_populares?limite=5')),
+      safe(api.get('/carta/stock_bajo?umbral=5')),
+    ]).then(([s, v, p, sb]) => {
+      if (s) setStats(s.data)
+      if (v) setVentas(v.data)
+      if (p) setPlatos(p.data)
+      if (sb) setStockBajo(sb.data)
+    }).finally(() => setLoading(false))
+  }, [])
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
@@ -76,7 +76,6 @@ useEffect(() => {
         <h1 className="text-2xl font-bold text-gray-100">Dashboard</h1>
         <p className="text-gray-500 text-sm mt-1">Resumen de operaciones del día</p>
       </div>
-      {/* Stock bajo */}
       {stockBajo.length > 0 && (
         <div className="bg-yellow-900/30 border border-yellow-700/50 rounded-xl px-4 py-3">
           <p className="text-yellow-400 text-sm font-semibold mb-2">
@@ -92,7 +91,6 @@ useEffect(() => {
           </div>
         </div>
       )}
-      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           label="Ventas hoy"
@@ -119,24 +117,26 @@ useEffect(() => {
         />
       </div>
 
-      {/* Charts */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Ventas 7 días */}
         <div className="card p-5 xl:col-span-2">
           <h3 className="text-sm font-semibold text-gray-300 mb-4">Ventas últimos 7 días</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={ventas} barSize={28}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
-              <XAxis dataKey="fecha" tick={{ fill: '#9ca3af', fontSize: 12 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#9ca3af', fontSize: 12 }} axisLine={false} tickLine={false}
-                tickFormatter={v => `S/.${v}`} />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(249,115,22,0.08)' }} />
-              <Bar dataKey="total" fill="#f97316" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          {ventas.length === 0
+            ? <p className="text-gray-500 text-sm">Sin datos aún</p>
+            : (
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={ventas} barSize={28}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
+                  <XAxis dataKey="fecha" tick={{ fill: '#9ca3af', fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: '#9ca3af', fontSize: 12 }} axisLine={false} tickLine={false}
+                    tickFormatter={v => `S/.${v}`} />
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(249,115,22,0.08)' }} />
+                  <Bar dataKey="total" fill="#f97316" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )
+          }
         </div>
 
-        {/* Platos top */}
         <div className="card p-5">
           <h3 className="text-sm font-semibold text-gray-300 mb-4">Top platos del mes</h3>
           <div className="space-y-3">
