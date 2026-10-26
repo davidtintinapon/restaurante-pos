@@ -76,7 +76,7 @@ export default function Usuarios() {
           <thead>
             <tr className="border-b border-gray-800">
               <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3">Nombre</th>
-              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3">Email</th>
+              <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3 hidden sm:table-cell">Email</th>
               <th className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider px-4 py-3 hidden sm:table-cell">Rol</th>
               <th className="px-4 py-3"></th>
             </tr>
@@ -90,11 +90,14 @@ export default function Usuarios() {
                                     text-brand-400 font-bold text-sm flex-shrink-0">
                       {u.nombre[0].toUpperCase()}
                     </div>
-                    <span className="font-medium text-gray-100">{u.nombre}</span>
+                    <div>
+                      <span className="font-medium text-gray-100">{u.nombre}</span>
+                      <div className="sm:hidden mt-0.5"><Badge value={u.rol} /></div>
+                    </div>
                   </div>
                 </td>
                 <td className="px-4 py-3 text-gray-400 text-sm hidden sm:table-cell">{u.email}</td>
-                <td className="px-4 py-3"><Badge value={u.rol} /></td>
+                <td className="px-4 py-3 hidden sm:table-cell"><Badge value={u.rol} /></td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex justify-end gap-2">
                     <button onClick={() => abrirModal(u)}
