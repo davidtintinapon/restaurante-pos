@@ -33,6 +33,7 @@ def login(request: Request, data: LoginRequest, db: Session = Depends(get_db)):
         nombre_restaurante=tenant.nombre if tenant else "Restaurante",
         ruc=tenant.ruc if tenant else None,
         direccion=tenant.direccion if tenant else None,
+        plan=tenant.plan if tenant else None,
     )
 
     token = create_access_token({"sub": user.id, "tenant_id": user.tenant_id, "rol": user.rol})

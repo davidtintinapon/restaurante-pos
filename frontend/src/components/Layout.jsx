@@ -56,7 +56,7 @@ const NAV_GROUPS = [
     items: [
       ['Dashboard',   '/dashboard',      ['admin', 'cajero', 'superadmin'], 'dashboard'],
       ['Mesas',       '/mesas',          ['admin', 'cajero', 'mozo'],       'mesas'],
-      ['Cocina',      '/cocina',         ['admin', 'cocinero'],             'cocina'],
+      ['Cocina',      '/cocina',         ['admin', 'cocinero'],             'cocina',   true],
     ],
   },
   {
@@ -70,7 +70,7 @@ const NAV_GROUPS = [
   {
     label: 'Análisis',
     items: [
-      ['Reportes',    '/reportes',       ['admin'],                         'reportes'],
+      ['Reportes',    '/reportes',       ['admin'],                         'reportes', true],
     ],
   },
   {
@@ -125,7 +125,13 @@ export default function Layout() {
         {/* Nav */}
         <nav className="flex-1 py-3 overflow-y-auto overflow-x-hidden space-y-4">
           {NAV_GROUPS.map(group => {
-            const visibles = group.items.filter(([,, roles]) => roles.includes(rolUser))
+            const planUser = user?.plan || 'basico'
+            const planPro = ['pro', 'premium'].includes(planUser)
+            const visibles = group.items.filter(([,, roles, , soloProPlus]) => {
+              if (!roles.includes(rolUser)) return false
+              if (soloProPlus && !planPro) return false
+              return true
+            })
             if (visibles.length === 0) return null
 
             return (

@@ -24,6 +24,7 @@ class UsuarioOut(BaseModel):
     nombre_restaurante: Optional[str] = None
     ruc: Optional[str] = None
     direccion: Optional[str] = None
+    plan: Optional[str] = None
     model_config = {"from_attributes": True}
 
 class LoginRequest(BaseModel):
