@@ -473,7 +473,7 @@ export default function Mesas() {
             <p className="text-gray-400 text-sm">Estado actual: <Badge value={modalAccion.estado} /></p>
             <p className="text-gray-400 text-sm">Cambiar a:</p>
             <div className="grid grid-cols-2 gap-2">
-              {ESTADOS.filter(e => e !== modalAccion.estado).map(e => (
+              {ESTADOS.filter(e => e !== modalAccion.estado && (e !== 'reservada' || isAdmin || isCajero)).map(e => (
                 <button key={e} onClick={() => cambiarEstado(modalAccion, e)}
                   className="btn-secondary capitalize">{e.replace('_', ' ')}</button>
               ))}
