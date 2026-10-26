@@ -638,7 +638,7 @@ export default function Pedido() {
                   Cobrar
                 </button>
               )}
-              {(isAdmin || pedido.items.length === 0) && pedido.estado !== 'cerrado' && pedido.estado !== 'cancelado' && (
+              {(isAdmin || isMozo || user?.rol === 'cajero' || pedido.items.length === 0) && pedido.estado !== 'cerrado' && pedido.estado !== 'cancelado' && (
                 <button onClick={cancelar} className="btn-danger">Cancelar</button>
               )}
             </>
