@@ -465,8 +465,8 @@ def cancelar_pedido(
     if pedido.estado in ("cerrado", "cancelado"):
         raise HTTPException(status_code=400, detail="El pedido ya está cerrado/cancelado")
 
-    if pedido.items and user.rol not in ("admin", "superadmin"):
-        raise HTTPException(status_code=403, detail="Solo un admin puede cancelar pedidos con items")
+    if pedido.items and user.rol not in ("admin", "superadmin", "cajero", "mozo"):
+        raise HTTPException(status_code=403, detail="No tienes permiso para cancelar este pedido")
 
     pedido.estado = "cancelado"
     pedido.hora_cierre = datetime.now(timezone.utc).replace(tzinfo=None)
