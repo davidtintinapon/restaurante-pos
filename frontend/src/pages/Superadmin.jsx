@@ -4,12 +4,12 @@ import { useToast } from '../context/ToastContext'
 import Modal from '../components/ui/Modal'
 import Spinner from '../components/ui/Spinner'
 
-const PLANES = ['basico', 'pro', 'premium']
+const PLANES = ['basico', 'pro', 'empresa']
 
 const PLAN_INFO = {
   basico:  { label: 'Básico',  usuarios: 2,   mesas: 'Ilimitadas', roles: 'Admin, Cajero' },
   pro:     { label: 'Pro',     usuarios: 5,   mesas: 'Ilimitadas', roles: 'Admin, Cajero, Mozo, Cocinero' },
-  premium: { label: 'Premium', usuarios: 999, mesas: 'Ilimitadas', roles: 'Todos los roles' },
+  empresa: { label: 'Empresa', usuarios: 999, mesas: 'Ilimitadas', roles: 'Todos los roles' },
 }
 
 function fmtFecha(dt) {
@@ -40,7 +40,8 @@ export default function Superadmin() {
   // Modal editar tenant
   const [modalEditar, setModalEditar] = useState(false)
   const [editTenant, setEditTenant] = useState(null)
-  const [formEditar, setFormEditar] = useState({ ruc: '', direccion: '' })
+  const [formEditar, setFormEditar] = useState({ nombre: '', plan: 'basico', ruc: '', direccion: '' })
+  const [confirmEliminar, setConfirmEliminar] = useState(null) // tenant a eliminar
   const [savingEditar, setSavingEditar] = useState(false)
 
   const cargar = () => {
@@ -64,7 +65,7 @@ export default function Superadmin() {
 
   const abrirEditar = t => {
     setEditTenant(t)
-    setFormEditar({ ruc: t.ruc || '', direccion: t.direccion || '' })
+    setFormEditar({ nombre: t.nombre || '', plan: t.plan || 'basico', ruc: t.ruc || '', direccion: t.direccion || '' })
     setModalEditar(true)
   }
 
@@ -79,6 +80,18 @@ export default function Superadmin() {
     } catch (err) {
       toast(err.response?.data?.detail || 'Error', 'error')
     } finally { setSavingEditar(false) }
+  }
+
+  const eliminarTenant = async () => {
+    if (!confirmEliminar) return
+    try {
+      await api.delete(`/superadmin/tenants/${confirmEliminar.id}`)
+      toast('Restaurante eliminado', 'success')
+      setConfirmEliminar(null)
+      cargar()
+    } catch (err) {
+      toast(err.response?.data?.detail || 'Error al eliminar', 'error')
+    }
   }
 
   const renovar = async (t, dias) => {
@@ -251,6 +264,21 @@ export default function Superadmin() {
       <Modal open={modalEditar} onClose={() => setModalEditar(false)} title={`Editar — ${editTenant?.nombre}`}>
         <form onSubmit={guardarEditar} className="space-y-4">
           <div>
+            <label className="label">Nombre del restaurante</label>
+            <input className="input" placeholder="El Camarón"
+              value={formEditar.nombre}
+              onChange={e => setFormEditar(f => ({ ...f, nombre: e.target.value }))} />
+          </div>
+          <div>
+            <label className="label">Plan</label>
+            <select className="input" value={formEditar.plan}
+              onChange={e => setFormEditar(f => ({ ...f, plan: e.target.value }))}>
+              <option value="basico">Básico — S/. 99/mes</option>
+              <option value="pro">Pro — S/. 149/mes</option>
+              <option value="empresa">Empresa — S/. 299/mes</option>
+            </select>
+          </div>
+          <div>
             <label className="label">RUC</label>
             <input className="input" maxLength={11} placeholder="20123456789"
               value={formEditar.ruc}
@@ -268,8 +296,36 @@ export default function Superadmin() {
             </button>
             <button type="button" className="btn-secondary" onClick={() => setModalEditar(false)}>Cancelar</button>
           </div>
+          <div className="border-t border-gray-700 pt-3">
+            <button type="button"
+              className="w-full text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 py-2 rounded-lg transition-colors"
+              onClick={() => { setModalEditar(false); setConfirmEliminar(editTenant) }}>
+              Eliminar restaurante
+            </button>
+          </div>
         </form>
       </Modal>
+
+      {/* Modal confirmar eliminar */}
+      {confirmEliminar && (
+        <Modal open={true} onClose={() => setConfirmEliminar(null)} title="Eliminar restaurante">
+          <div className="space-y-4">
+            <p className="text-gray-300 text-sm">
+              ¿Estás seguro de eliminar <strong className="text-gray-100">{confirmEliminar.nombre}</strong>?
+              Esto desactivará el restaurante y todos sus usuarios. Esta acción no se puede deshacer.
+            </p>
+            <div className="flex gap-3">
+              <button className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm font-medium transition-colors"
+                onClick={eliminarTenant}>
+                Sí, eliminar
+              </button>
+              <button className="btn-secondary flex-1" onClick={() => setConfirmEliminar(null)}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }

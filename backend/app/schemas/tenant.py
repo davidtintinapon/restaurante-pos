@@ -7,14 +7,14 @@ from datetime import datetime
 _PLAN_LIMITS = {
     "basico":  {"max_usuarios": 2,   "max_mesas": 9999},
     "pro":     {"max_usuarios": 5,   "max_mesas": 9999},
-    "premium": {"max_usuarios": 999, "max_mesas": 9999},
+    "empresa": {"max_usuarios": 999, "max_mesas": 9999},
 }
 
 
 class TenantCreate(BaseModel):
     nombre:         str
     slug:           str
-    plan:           Literal["basico", "pro", "premium"] = "basico"
+    plan:           Literal["basico", "pro", "empresa"] = "basico"
     admin_nombre:   str
     admin_email:    EmailStr
     admin_password: str
@@ -38,7 +38,7 @@ class TenantUpdate(BaseModel):
     nombre:       Optional[str]                                 = None
     ruc:          Optional[str]                                 = None
     direccion:    Optional[str]                                 = None
-    plan:         Optional[Literal["basico", "pro", "premium"]] = None
+    plan:         Optional[Literal["basico", "pro", "empresa"]] = None
     activo:       Optional[bool]                                = None
     vence_en:     Optional[datetime]                            = None
     max_usuarios: Optional[int]                                 = None
