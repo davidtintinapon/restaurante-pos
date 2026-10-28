@@ -30,6 +30,7 @@ def _build_ticket(
     tipo: str,
     items: list[dict],
     nota: Optional[str] = None,
+    nombre_restaurante: Optional[str] = None,
 ) -> bytes:
     """
     Construye los bytes ESC/POS del ticket de cocina.
@@ -51,6 +52,8 @@ def _build_ticket(
     buf += INIT
     buf += ALIGN_CENTER
     buf += BOLD_ON + DOUBLE_HEIGHT
+    if nombre_restaurante:
+        buf += line(nombre_restaurante.upper())
     buf += line("** COCINA **")
     buf += NORMAL_SIZE + BOLD_OFF
 
@@ -110,6 +113,7 @@ def imprimir_ticket_cocina(
     tipo: str,
     items: list[dict],
     nota: Optional[str] = None,
+    nombre_restaurante: Optional[str] = None,
     timeout: float = 5.0,
 ) -> bool:
     """
@@ -123,6 +127,7 @@ def imprimir_ticket_cocina(
             tipo=tipo,
             items=items,
             nota=nota,
+            nombre_restaurante=nombre_restaurante,
         )
         with socket.create_connection((printer_ip, printer_port), timeout=timeout) as sock:
             sock.sendall(data)

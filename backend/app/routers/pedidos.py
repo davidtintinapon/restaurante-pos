@@ -390,6 +390,7 @@ def enviar_a_cocina(
             }
             for it in pedido_fresco.items
         ]
+        cfg_cocina = db.query(Configuracion).filter(Configuracion.tenant_id == user.tenant_id).first()
         imprimir_ticket_cocina(
             printer_ip=caja_cocina.printer_ip,
             printer_port=int(caja_cocina.printer_port or 9100),
@@ -398,6 +399,7 @@ def enviar_a_cocina(
             tipo=pedido_fresco.tipo or "salon",
             items=items_impresora,
             nota=pedido_fresco.nota_general,
+            nombre_restaurante=cfg_cocina.nombre_local if cfg_cocina else None,
         )
 
     return _pedido_out(_load_pedido(pedido_id, user.tenant_id, db))
