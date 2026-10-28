@@ -8,7 +8,7 @@ from ..models.usuario import Usuario
 
 router = APIRouter(prefix="/superadmin/dashboard", tags=["superadmin-dashboard"])
 
-PRECIO_PLAN = {"basico": 150, "estandar": 250, "pro": 400}
+PRECIO_PLAN = {"basico": 99, "pro": 149, "empresa": 299}
 
 
 @router.get("")
@@ -29,7 +29,7 @@ def dashboard_superadmin(
     ]
 
     # Ingresos estimados del mes: tenants activos × precio de su plan
-    ingresos_mes = sum(PRECIO_PLAN.get(t.plan, 150) for t in activos)
+    ingresos_mes = sum(PRECIO_PLAN.get(t.plan, 99) for t in activos)
 
     total_usuarios = db.query(Usuario).filter(Usuario.activo == True).count()
 

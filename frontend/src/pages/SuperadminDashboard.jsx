@@ -27,7 +27,7 @@ const PLAN_BADGE = {
   pro:       'bg-purple-900/50 text-purple-300',
 }
 
-const PLAN_PRECIO = { basico: 150, estandar: 250, pro: 400 }
+const PLAN_PRECIO = { basico: 99, pro: 149, empresa: 299 }
 
 export default function SuperadminDashboard() {
   const [data, setData] = useState(null)
@@ -148,7 +148,7 @@ export default function SuperadminDashboard() {
                       )}
                     </td>
                     <td className="px-5 py-3 text-right text-brand-400 font-semibold">
-                      {t.activo ? `S/. ${PLAN_PRECIO[t.plan] || 150}` : <span className="text-gray-600">—</span>}
+                      {t.activo ? `S/. ${PLAN_PRECIO[t.plan] || 99}` : <span className="text-gray-600">—</span>}
                     </td>
                   </tr>
                 )
