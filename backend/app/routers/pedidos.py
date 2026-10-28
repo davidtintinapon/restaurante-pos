@@ -399,7 +399,7 @@ def enviar_a_cocina(
             tipo=pedido_fresco.tipo or "salon",
             items=items_impresora,
             nota=pedido_fresco.nota_general,
-            nombre_restaurante=cfg_cocina.nombre_local if cfg_cocina else None,
+            nombre_restaurante=cfg_cocina.nombre_restaurante if cfg_cocina else None,
         )
 
     return _pedido_out(_load_pedido(pedido_id, user.tenant_id, db))
