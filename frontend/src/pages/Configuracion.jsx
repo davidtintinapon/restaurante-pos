@@ -102,7 +102,17 @@ function GestionCajas() {
   const [limiteMsg, setLimiteMsg] = useState('')
 
   const cargar = () =>
-    api.get('/cajas/').then(r => setCajas(r.data)).finally(() => setLoading(false))
+    api.get('/cajas/').then(r => {
+      setCajas(r.data)
+      // En plan pro: si ya hay una caja de un tipo, preseleccionar el otro
+      if (plan === 'pro') {
+        const activas = r.data.filter(c => c.activo)
+        const tieneCaja   = activas.some(c => c.tipo === 'caja')
+        const tieneCocina = activas.some(c => c.tipo === 'cocina')
+        if (tieneCocina && !tieneCaja)   setNueva(p => ({ ...p, tipo: 'caja' }))
+        if (tieneCaja   && !tieneCocina) setNueva(p => ({ ...p, tipo: 'cocina' }))
+      }
+    }).finally(() => setLoading(false))
 
   useEffect(() => { cargar() }, [])
 
@@ -193,14 +203,28 @@ function GestionCajas() {
               onChange={e => setNueva(p => ({ ...p, nombre: e.target.value }))}
               required
             />
-            <select
-              className="input"
-              value={nueva.tipo}
-              onChange={e => setNueva(p => ({ ...p, tipo: e.target.value }))}
-            >
-              <option value="caja">🧾 Caja (ticket con precios)</option>
-              <option value="cocina">🍳 Cocina (ticket sin precios)</option>
-            </select>
+            {(() => {
+              const activas = cajas.filter(c => c.activo)
+              const tieneCaja   = activas.some(c => c.tipo === 'caja')
+              const tieneCocina = activas.some(c => c.tipo === 'cocina')
+              // En pro: si un tipo ya está ocupado, forzar el otro
+              if (plan === 'pro' && tieneCocina && !tieneCaja) {
+                return <div className="input text-gray-300 flex items-center gap-2 cursor-default select-none">🧾 Caja (ticket con precios)</div>
+              }
+              if (plan === 'pro' && tieneCaja && !tieneCocina) {
+                return <div className="input text-gray-300 flex items-center gap-2 cursor-default select-none">🍳 Cocina (ticket sin precios)</div>
+              }
+              return (
+                <select
+                  className="input"
+                  value={nueva.tipo}
+                  onChange={e => setNueva(p => ({ ...p, tipo: e.target.value }))}
+                >
+                  {(!tieneCaja   || plan !== 'pro') && <option value="caja">🧾 Caja (ticket con precios)</option>}
+                  {(!tieneCocina || plan !== 'pro') && <option value="cocina">🍳 Cocina (ticket sin precios)</option>}
+                </select>
+              )
+            })()}
             {plan === 'basico' && (
               <p className="text-xs text-yellow-400/80 sm:col-span-2">
                 ⚠️ Plan Básico: solo puedes tener 1 impresora. Al elegir <strong>Cocina</strong> imprimirá cuando el mozo envíe el pedido. Al elegir <strong>Caja</strong> imprimirá cuando el cajero cobre.
