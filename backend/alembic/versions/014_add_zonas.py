@@ -1,14 +1,14 @@
 """add zonas table
 
-Revision ID: 014
-Revises: 013
+Revision ID: 014_add_zonas
+Revises: 013_fix_pedidos_columns
 Create Date: 2026-10-28
 """
 from alembic import op
 import sqlalchemy as sa
 
-revision = '014'
-down_revision = '013'
+revision = '014_add_zonas'
+down_revision = '013_fix_pedidos_columns'
 branch_labels = None
 depends_on = None
 
