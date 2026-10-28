@@ -24,3 +24,4 @@ class Tenant(Base):
     categorias = relationship("Categoria", back_populates="tenant", cascade="all, delete-orphan")
     platos     = relationship("Plato",     back_populates="tenant", cascade="all, delete-orphan")
     pedidos    = relationship("Pedido",    back_populates="tenant", cascade="all, delete-orphan")
+    zonas      = relationship("Zona",      back_populates="tenant", cascade="all, delete-orphan")

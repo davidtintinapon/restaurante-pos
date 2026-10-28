@@ -98,8 +98,9 @@ export default function Mesas() {
 
   const [modalMesa, setModalMesa] = useState(false)
   const [editMesa, setEditMesa] = useState(null)
-  const [formMesa, setFormMesa] = useState({ numero: '', nombre: '', capacidad: 4, zona: 'salon' })
+  const [formMesa, setFormMesa] = useState({ numero: '', nombre: '', capacidad: 4, zona: '' })
   const [saving, setSaving] = useState(false)
+  const [zonas, setZonas] = useState([])
   const [modalAccion, setModalAccion] = useState(null)
   const [modalLlevar, setModalLlevar] = useState(false)
   const [nombreCliente, setNombreCliente] = useState('')
@@ -120,13 +121,18 @@ export default function Mesas() {
     }).finally(() => setLoading(false))
   }
 
+  const cargarZonas = () => {
+    api.get('/zonas/').then(r => setZonas(r.data))
+  }
+
   useEffect(() => {
     cargar()
+    cargarZonas()
     const interval = setInterval(cargar, 6000)
     return () => clearInterval(interval)
   }, [])
 
-  const zonas = ['todas', ...new Set(mesas.map(m => m.zona).filter(Boolean))]
+  const filtrosZona = ['todas', ...new Set(mesas.map(m => m.zona).filter(Boolean))]
   const mesasFiltradas = mesas.filter(m => {
     if (filtroZona !== 'todas' && m.zona !== filtroZona) return false
     if (filtroEstado !== 'todas' && m.estado !== filtroEstado) return false
@@ -199,8 +205,8 @@ export default function Mesas() {
   const abrirModalMesa = (mesa = null) => {
     setEditMesa(mesa)
     setFormMesa(mesa
-      ? { numero: mesa.numero, nombre: mesa.nombre || '', capacidad: mesa.capacidad, zona: mesa.zona || 'salon' }
-      : { numero: '', nombre: '', capacidad: 4, zona: 'salon' })
+      ? { numero: mesa.numero, nombre: mesa.nombre || '', capacidad: mesa.capacidad, zona: mesa.zona || '' }
+      : { numero: '', nombre: '', capacidad: 4, zona: zonas.length > 0 ? zonas[0].nombre : '' })
     setModalMesa(true)
   }
 
@@ -303,7 +309,7 @@ export default function Mesas() {
         <>
           <div className="flex flex-wrap gap-3">
             <div className="flex gap-1 bg-gray-900 rounded-lg p-1 border border-gray-800">
-              {zonas.map(z => (
+              {filtrosZona.map(z => (
                 <button key={z} onClick={() => setFiltroZona(z)}
                   className={`px-3 py-1 rounded-md text-sm font-medium capitalize transition-colors
                     ${filtroZona === z ? 'bg-brand-500 text-white' : 'text-gray-400 hover:text-gray-100'}`}>
@@ -457,9 +463,12 @@ export default function Mesas() {
             <label className="label">Zona</label>
             <select className="input" value={formMesa.zona}
               onChange={e => setFormMesa(f => ({ ...f, zona: e.target.value }))}>
-              {['salon', 'terraza', 'barra', 'privado'].map(z => (
-                <option key={z} value={z} className="bg-gray-800 capitalize">{z}</option>
-              ))}
+              {zonas.length === 0
+                ? <option value="">Sin zonas — crea una en Configuración</option>
+                : zonas.map(z => (
+                    <option key={z.id} value={z.nombre} className="bg-gray-800">{z.nombre}</option>
+                  ))
+              }
             </select>
           </div>
           <div className="flex gap-3 pt-2">

@@ -88,6 +88,132 @@ function CambiarPassword() {
   )
 }
 
+
+function GestionZonas() {
+  const toast = useToast()
+  const [zonas, setZonas] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [nueva, setNueva] = useState('')
+  const [editando, setEditando] = useState(null) // { id, nombre }
+  const [saving, setSaving] = useState(false)
+
+  const cargar = () => {
+    api.get('/zonas/').then(r => setZonas(r.data)).finally(() => setLoading(false))
+  }
+
+  useEffect(() => { cargar() }, [])
+
+  const crear = async e => {
+    e.preventDefault()
+    if (!nueva.trim()) return
+    setSaving(true)
+    try {
+      await api.post('/zonas/', { nombre: nueva.trim(), orden: zonas.length })
+      setNueva('')
+      cargar()
+      toast('Zona creada', 'success')
+    } catch (err) {
+      toast(err.response?.data?.detail || 'Error al crear zona', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const guardarEdicion = async e => {
+    e.preventDefault()
+    if (!editando?.nombre.trim()) return
+    setSaving(true)
+    try {
+      await api.patch(`/zonas/${editando.id}`, { nombre: editando.nombre.trim() })
+      setEditando(null)
+      cargar()
+      toast('Zona actualizada', 'success')
+    } catch (err) {
+      toast(err.response?.data?.detail || 'Error al actualizar', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const eliminar = async (id) => {
+    try {
+      await api.delete(`/zonas/${id}`)
+      cargar()
+      toast('Zona eliminada', 'success')
+    } catch (err) {
+      toast(err.response?.data?.detail || 'No se puede eliminar — tiene mesas asignadas', 'error')
+    }
+  }
+
+  if (loading) return <div className="flex justify-center py-8"><Spinner size="lg" /></div>
+
+  return (
+    <div className="space-y-4">
+      {/* Crear nueva zona */}
+      <form onSubmit={crear} className="flex gap-2">
+        <input
+          className="input flex-1"
+          placeholder="Ej: Salón principal, Terraza, Barra…"
+          value={nueva}
+          onChange={e => setNueva(e.target.value)}
+        />
+        <button type="submit" className="btn-primary px-4" disabled={saving || !nueva.trim()}>
+          {saving ? <Spinner size="sm" /> : 'Agregar'}
+        </button>
+      </form>
+
+      {/* Lista de zonas */}
+      {zonas.length === 0 ? (
+        <p className="text-gray-500 text-sm text-center py-4">
+          No hay zonas creadas. Crea tu primera zona arriba.
+        </p>
+      ) : (
+        <ul className="space-y-2">
+          {zonas.map(z => (
+            <li key={z.id} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-800/60 border border-gray-700">
+              {editando?.id === z.id ? (
+                <form onSubmit={guardarEdicion} className="flex items-center gap-2 flex-1">
+                  <input
+                    className="input flex-1 py-1 text-sm"
+                    value={editando.nombre}
+                    onChange={e => setEditando(ed => ({ ...ed, nombre: e.target.value }))}
+                    autoFocus
+                  />
+                  <button type="submit" className="text-xs text-green-400 hover:text-green-300 px-2" disabled={saving}>
+                    Guardar
+                  </button>
+                  <button type="button" className="text-xs text-gray-500 hover:text-gray-300 px-1"
+                    onClick={() => setEditando(null)}>
+                    Cancelar
+                  </button>
+                </form>
+              ) : (
+                <>
+                  <span className="flex-1 text-sm text-gray-200 capitalize">{z.nombre}</span>
+                  <button
+                    type="button"
+                    onClick={() => setEditando({ id: z.id, nombre: z.nombre })}
+                    className="text-xs text-gray-400 hover:text-gray-200 px-2 py-1 rounded hover:bg-gray-700 transition-colors"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => eliminar(z.id)}
+                    className="text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded hover:bg-red-500/10 transition-colors"
+                  >
+                    Eliminar
+                  </button>
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 export default function Configuracion() {
   const toast = useToast()
   const [tab, setTab] = useState('config')
@@ -146,6 +272,17 @@ export default function Configuracion() {
         </button>
         <button
           type="button"
+          onClick={() => setTab('zonas')}
+          className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+            tab === 'zonas'
+              ? 'bg-gray-800 text-gray-100 border border-b-0 border-gray-700'
+              : 'text-gray-500 hover:text-gray-300'
+          }`}
+        >
+          Zonas
+        </button>
+        <button
+          type="button"
           onClick={() => setTab('password')}
           className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
             tab === 'password'
@@ -156,6 +293,16 @@ export default function Configuracion() {
           Cambiar contraseña
         </button>
       </div>
+
+      {tab === 'zonas' && (
+        <div className="card p-5 space-y-4">
+          <div>
+            <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide">Zonas del restaurante</h2>
+            <p className="text-xs text-gray-500 mt-1">Crea las zonas donde están tus mesas: Salón, Terraza, Barra, etc.</p>
+          </div>
+          <GestionZonas />
+        </div>
+      )}
 
       {tab === 'password' && (
         <div className="card p-5">

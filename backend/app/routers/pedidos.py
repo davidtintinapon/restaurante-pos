@@ -58,6 +58,7 @@ def _pedido_out(pedido: Pedido) -> PedidoOut:
         mesa_id=pedido.mesa_id,
         numero_mesa=pedido.mesa.numero if pedido.mesa else None,
         nombre_mesa=pedido.mesa.nombre if pedido.mesa else None,
+        zona_mesa=pedido.mesa.zona if pedido.mesa else None,
         nombre_cliente=pedido.nombre_cliente,
         telefono_delivery=pedido.telefono_delivery,
         direccion_delivery=pedido.direccion_delivery,

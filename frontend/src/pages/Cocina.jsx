@@ -138,7 +138,16 @@ export default function Cocina() {
                     ? <span className="text-yellow-400 text-sm font-semibold">LLEVAR · {pedido.nombre_cliente || '—'}</span>
                     : pedido.tipo === 'delivery'
                     ? <span className="text-blue-400 text-sm font-semibold">DELIVERY · {pedido.nombre_cliente || '—'}</span>
-                    : pedido.nombre_mesa && <span className="text-gray-500 text-sm">{pedido.nombre_mesa}</span>
+                    : (
+                      <div className="flex flex-col">
+                        {pedido.zona_mesa && (
+                          <span className="text-xs font-semibold uppercase tracking-wider text-brand-400/80">
+                            {pedido.zona_mesa}
+                          </span>
+                        )}
+                        {pedido.nombre_mesa && <span className="text-gray-500 text-sm">{pedido.nombre_mesa}</span>}
+                      </div>
+                    )
                   }
                 </div>
                 <div className="flex items-center gap-2">

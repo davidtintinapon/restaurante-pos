@@ -64,6 +64,7 @@ class PedidoOut(BaseModel):
     mesa_id: Optional[str] = None
     numero_mesa: Optional[int] = None
     nombre_mesa: Optional[str] = None
+    zona_mesa: Optional[str] = None
     nombre_cliente: Optional[str] = None
     telefono_delivery: Optional[str] = None
     direccion_delivery: Optional[str] = None
