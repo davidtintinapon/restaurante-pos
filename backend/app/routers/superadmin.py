@@ -71,7 +71,18 @@ def actualizar_tenant(
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant no encontrado")
 
-    for field, value in data.model_dump(exclude_none=True).items():
+    update_data = data.model_dump(exclude_none=True)
+
+    # Si cambia el plan, actualizar max_usuarios automáticamente
+    if "plan" in update_data:
+        limites = _PLAN_LIMITS.get(update_data["plan"], _PLAN_LIMITS["basico"])
+        update_data.setdefault("max_usuarios", limites["max_usuarios"])
+        update_data.setdefault("max_mesas", limites["max_mesas"])
+        # Reactivar tenant si estaba suspendido y se le asigna un plan
+        if not tenant.activo:
+            update_data["activo"] = True
+
+    for field, value in update_data.items():
         setattr(tenant, field, value)
     db.commit()
     db.refresh(tenant)
