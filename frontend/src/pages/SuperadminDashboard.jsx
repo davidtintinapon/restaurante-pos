@@ -27,7 +27,7 @@ const PLAN_BADGE = {
   pro:       'bg-purple-900/50 text-purple-300',
 }
 
-const PLAN_PRECIO = { basico: 99, pro: 149, empresa: 299 }
+const PLAN_PRECIO = { basico: 99, pro: 149, premium: 199 }
 
 export default function SuperadminDashboard() {
   const [data, setData] = useState(null)

@@ -4,12 +4,12 @@ import { useToast } from '../context/ToastContext'
 import Modal from '../components/ui/Modal'
 import Spinner from '../components/ui/Spinner'
 
-const PLANES = ['basico', 'pro', 'empresa']
+const PLANES = ['basico', 'pro', 'premium']
 
 const PLAN_INFO = {
   basico:  { label: 'Básico',  usuarios: 2,   mesas: 'Ilimitadas', roles: 'Admin, Cajero' },
   pro:     { label: 'Pro',     usuarios: 5,   mesas: 'Ilimitadas', roles: 'Admin, Cajero, Mozo, Cocinero' },
-  empresa: { label: 'Empresa', usuarios: 999, mesas: 'Ilimitadas', roles: 'Todos los roles' },
+  premium: { label: 'Premium', usuarios: 999, mesas: 'Ilimitadas', roles: 'Todos los roles' },
 }
 
 function fmtFecha(dt) {
@@ -275,7 +275,7 @@ export default function Superadmin() {
               onChange={e => setFormEditar(f => ({ ...f, plan: e.target.value }))}>
               <option value="basico">Básico — S/. 99/mes</option>
               <option value="pro">Pro — S/. 149/mes</option>
-              <option value="empresa">Empresa — S/. 299/mes</option>
+              <option value="premium">Premium — S/. 199/mes</option>
             </select>
           </div>
           <div>

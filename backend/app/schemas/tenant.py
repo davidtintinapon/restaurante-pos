@@ -4,23 +4,22 @@ from datetime import datetime
 
 
 # Límites por plan — mesas ilimitadas para todos los planes
+# max_cajas: 0 = ilimitado
 _PLAN_LIMITS = {
-    "basico":  {"max_usuarios": 2,   "max_mesas": 9999},
-    "pro":     {"max_usuarios": 5,   "max_mesas": 9999},
-    "empresa": {"max_usuarios": 999, "max_mesas": 9999},
+    "basico":  {"max_usuarios": 2,    "max_mesas": 9999, "max_cajas": 1},
+    "pro":     {"max_usuarios": 5,    "max_mesas": 9999, "max_cajas": 2},
+    "premium": {"max_usuarios": 9999, "max_mesas": 9999, "max_cajas": 0},
 }
 
 
 class TenantCreate(BaseModel):
     nombre:         str
     slug:           str
-    plan:           Literal["basico", "pro", "empresa"] = "basico"
+    plan:           Literal["basico", "pro", "premium"] = "basico"
     admin_nombre:   str
     admin_email:    EmailStr
     admin_password: str
 
-    # max_usuarios y max_mesas se derivan del plan automáticamente.
-    # Se aceptan opcionalmente para que el superadmin pueda sobreescribir.
     max_usuarios: Optional[int] = None
     max_mesas:    Optional[int] = None
 
@@ -35,14 +34,14 @@ class TenantCreate(BaseModel):
 
 
 class TenantUpdate(BaseModel):
-    nombre:       Optional[str]                                 = None
-    ruc:          Optional[str]                                 = None
-    direccion:    Optional[str]                                 = None
-    plan:         Optional[Literal["basico", "pro", "empresa"]] = None
-    activo:       Optional[bool]                                = None
-    vence_en:     Optional[datetime]                            = None
-    max_usuarios: Optional[int]                                 = None
-    max_mesas:    Optional[int]                                 = None
+    nombre:       Optional[str]                                   = None
+    ruc:          Optional[str]                                   = None
+    direccion:    Optional[str]                                   = None
+    plan:         Optional[Literal["basico", "pro", "premium"]]   = None
+    activo:       Optional[bool]                                  = None
+    vence_en:     Optional[datetime]                              = None
+    max_usuarios: Optional[int]                                   = None
+    max_mesas:    Optional[int]                                   = None
 
 
 class TenantOut(BaseModel):

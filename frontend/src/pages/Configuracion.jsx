@@ -89,6 +89,172 @@ function CambiarPassword() {
 }
 
 
+function GestionCajas() {
+  const [cajas, setCajas] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [nueva, setNueva] = useState({ nombre: '', printer_ip: '', printer_port: '9100' })
+  const [editando, setEditando] = useState(null)
+  const [saving, setSaving] = useState(false)
+  const [limiteAlcanzado, setLimiteAlcanzado] = useState(false)
+  const [limiteMsg, setLimiteMsg] = useState('')
+
+  const cargar = () =>
+    api.get('/cajas/').then(r => setCajas(r.data)).finally(() => setLoading(false))
+
+  useEffect(() => { cargar() }, [])
+
+  const crear = async e => {
+    e.preventDefault()
+    if (!nueva.nombre.trim()) return
+    setSaving(true)
+    try {
+      await api.post('/cajas/', {
+        nombre: nueva.nombre.trim(),
+        printer_ip: nueva.printer_ip.trim() || null,
+        printer_port: nueva.printer_port || '9100',
+      })
+      setNueva({ nombre: '', printer_ip: '', printer_port: '9100' })
+      setLimiteAlcanzado(false)
+      setLimiteMsg('')
+      cargar()
+    } catch (err) {
+      const msg = err?.response?.data?.detail || 'Error al crear caja'
+      if (err?.response?.status === 400) {
+        setLimiteAlcanzado(true)
+        setLimiteMsg(msg)
+      }
+    } finally { setSaving(false) }
+  }
+
+  const guardarEdicion = async e => {
+    e.preventDefault()
+    if (!editando?.nombre?.trim()) return
+    setSaving(true)
+    try {
+      await api.patch(`/cajas/${editando.id}`, {
+        nombre: editando.nombre.trim(),
+        printer_ip: editando.printer_ip?.trim() || null,
+        printer_port: editando.printer_port || '9100',
+      })
+      setEditando(null)
+      cargar()
+    } finally { setSaving(false) }
+  }
+
+  const eliminar = async id => {
+    if (!confirm('¿Eliminar esta caja?')) return
+    await api.delete(`/cajas/${id}`)
+    cargar()
+  }
+
+  if (loading) return <div className="py-4 text-center text-gray-500 text-sm">Cargando cajas...</div>
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-1">Cajas / Impresoras</h3>
+        <p className="text-xs text-gray-500">Cada caja tiene su propia impresora térmica de cocina. El límite depende de tu plan.</p>
+      </div>
+
+      {/* Formulario nueva caja */}
+      {limiteAlcanzado ? (
+        <div className="px-3 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs">
+          {limiteMsg}
+        </div>
+      ) : (
+        <form onSubmit={crear} className="space-y-2 p-3 rounded-lg bg-gray-800/50 border border-gray-700/50">
+          <p className="text-xs font-medium text-gray-400">Nueva caja</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input
+              className="input sm:col-span-1"
+              placeholder="Nombre (Ej: Caja 1)"
+              value={nueva.nombre}
+              onChange={e => setNueva(p => ({ ...p, nombre: e.target.value }))}
+              required
+            />
+            <input
+              className="input font-mono"
+              placeholder="IP impresora (Ej: 192.168.1.100)"
+              value={nueva.printer_ip}
+              onChange={e => setNueva(p => ({ ...p, printer_ip: e.target.value }))}
+            />
+            <div className="flex gap-2">
+              <input
+                className="input font-mono w-24"
+                placeholder="9100"
+                value={nueva.printer_port}
+                onChange={e => setNueva(p => ({ ...p, printer_port: e.target.value }))}
+              />
+              <button type="submit" className="btn-primary flex-1" disabled={saving}>
+                {saving ? '...' : 'Agregar'}
+              </button>
+            </div>
+          </div>
+        </form>
+      )}
+
+      {/* Lista de cajas */}
+      {cajas.length === 0 ? (
+        <p className="text-sm text-gray-600 py-2">No hay cajas creadas aún.</p>
+      ) : (
+        <div className="space-y-2">
+          {cajas.map(c => (
+            <div key={c.id} className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 rounded-lg bg-gray-800/40 border border-gray-700/40">
+              {editando?.id === c.id ? (
+                <form onSubmit={guardarEdicion} className="flex flex-col sm:flex-row gap-2 flex-1">
+                  <input
+                    className="input flex-1"
+                    value={editando.nombre}
+                    onChange={e => setEditando(p => ({ ...p, nombre: e.target.value }))}
+                    required
+                  />
+                  <input
+                    className="input font-mono flex-1"
+                    placeholder="IP impresora"
+                    value={editando.printer_ip || ''}
+                    onChange={e => setEditando(p => ({ ...p, printer_ip: e.target.value }))}
+                  />
+                  <input
+                    className="input font-mono w-20"
+                    placeholder="9100"
+                    value={editando.printer_port || '9100'}
+                    onChange={e => setEditando(p => ({ ...p, printer_port: e.target.value }))}
+                  />
+                  <div className="flex gap-2">
+                    <button type="submit" className="btn-primary text-xs px-3" disabled={saving}>Guardar</button>
+                    <button type="button" className="btn-ghost text-xs px-3" onClick={() => setEditando(null)}>Cancelar</button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-200">{c.nombre}</p>
+                    {c.printer_ip ? (
+                      <p className="text-xs text-gray-500 font-mono">{c.printer_ip}:{c.printer_port || '9100'}</p>
+                    ) : (
+                      <p className="text-xs text-gray-600 italic">Sin impresora configurada</p>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      className="btn-ghost text-xs px-3"
+                      onClick={() => setEditando({ id: c.id, nombre: c.nombre, printer_ip: c.printer_ip || '', printer_port: c.printer_port || '9100' })}
+                    >Editar</button>
+                    <button
+                      className="text-xs px-3 py-1 rounded-lg text-red-400 hover:bg-red-500/10 border border-red-500/20 transition-colors"
+                      onClick={() => eliminar(c.id)}
+                    >Eliminar</button>
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function GestionZonas() {
   const toast = useToast()
   const [zonas, setZonas] = useState([])
@@ -283,6 +449,17 @@ export default function Configuracion() {
         </button>
         <button
           type="button"
+          onClick={() => setTab('cajas')}
+          className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+            tab === 'cajas'
+              ? 'bg-gray-800 text-gray-100 border border-b-0 border-gray-700'
+              : 'text-gray-500 hover:text-gray-300'
+          }`}
+        >
+          Cajas
+        </button>
+        <button
+          type="button"
           onClick={() => setTab('password')}
           className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
             tab === 'password'
@@ -301,6 +478,12 @@ export default function Configuracion() {
             <p className="text-xs text-gray-500 mt-1">Crea las zonas donde están tus mesas: Salón, Terraza, Barra, etc.</p>
           </div>
           <GestionZonas />
+        </div>
+      )}
+
+      {tab === 'cajas' && (
+        <div className="card p-5">
+          <GestionCajas />
         </div>
       )}
 
@@ -435,46 +618,12 @@ export default function Configuracion() {
           {/* Impresora térmica */}
           <div className="card p-5 space-y-4">
             <div>
-              <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide">Impresora de cocina</h2>
+              <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wide">Impresoras de cocina</h2>
               <p className="text-xs text-gray-500 mt-0.5">
-                Impresora térmica 80 mm conectada por red (LAN o WiFi). El ticket se enviará automáticamente al presionar "Enviar a cocina".
+                Gestiona tus cajas e impresoras térmicas desde la pestaña <strong className="text-gray-400">Cajas</strong>.
+                Puedes configurar una IP por caja según tu plan.
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="sm:col-span-2">
-                <label className="label">IP de la impresora</label>
-                <input
-                  className="input font-mono"
-                  placeholder="Ej: 192.168.1.100"
-                  value={form.printer_ip}
-                  onChange={e => set('printer_ip', e.target.value)}
-                />
-                <p className="text-xs text-gray-600 mt-1">Deja vacío si no tienes impresora de cocina.</p>
-              </div>
-              <div>
-                <label className="label">Puerto</label>
-                <input
-                  className="input font-mono"
-                  placeholder="9100"
-                  value={form.printer_port}
-                  onChange={e => set('printer_port', e.target.value)}
-                />
-                <p className="text-xs text-gray-600 mt-1">Por defecto: 9100</p>
-              </div>
-            </div>
-            {form.printer_ip && (
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-xs">
-                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M17 17H17.01M7 17H7.01M6 11V7a2 2 0 012-2h8a2 2 0 012 2v4M3 11h18v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8z" />
-                </svg>
-                <span>
-                  Los tickets se imprimirán en{' '}
-                  <strong className="font-semibold">{form.printer_ip}:{form.printer_port || '9100'}</strong>{' '}
-                  al enviar a cocina.
-                </span>
-              </div>
-            )}
           </div>
 
           {/* Preview ticket */}

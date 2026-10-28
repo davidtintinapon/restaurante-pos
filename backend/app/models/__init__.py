@@ -6,5 +6,6 @@ from .pedido import Pedido, ItemPedido
 from .configuracion import Configuracion
 from .gasto import GastoCaja
 from .zona import Zona
+from .caja import Caja
 
-__all__ = ["Tenant", "Usuario", "Mesa", "Categoria", "Plato", "Pedido", "ItemPedido", "Configuracion", "GastoCaja", "Zona"]
+__all__ = ["Tenant", "Usuario", "Mesa", "Categoria", "Plato", "Pedido", "ItemPedido", "Configuracion", "GastoCaja", "Zona", "Caja"]

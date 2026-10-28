@@ -8,6 +8,7 @@ from .middleware.security_headers import SecurityHeadersMiddleware
 from .core.config import settings
 from .routers import auth, mesas, carta, pedidos, cocina, usuarios, reportes, superadmin, superadmin_dashboard, configuracion
 from .routers import gastos
+from .routers import cajas
 from .routers import zonas
 
 # ── Rate limiter ─────────────────────────────────────────────
@@ -52,6 +53,7 @@ app.include_router(superadmin_dashboard.router)
 app.include_router(configuracion.router)
 app.include_router(gastos.router)
 app.include_router(zonas.router)
+app.include_router(cajas.router)
 
 @app.get("/health")
 def health():
