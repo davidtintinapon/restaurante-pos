@@ -10,7 +10,8 @@ from ..schemas.pedido import (
     PedidoDeliveryCreate,
 )
 from ..models.configuracion import Configuracion
-from ..utils.printer import imprimir_ticket_cocina
+from ..utils.printer import imprimir_ticket_cocina, imprimir_ticket_caja
+from ..models.caja import Caja
 from datetime import datetime, timezone, timedelta
 import json
 
@@ -369,9 +370,12 @@ def enviar_a_cocina(
     db.commit()
 
     # ── Imprimir ticket de cocina (fallo silencioso) ──────────────────────────
-    cfg = db.query(Configuracion).filter(Configuracion.tenant_id == user.tenant_id).first()
-    if cfg and cfg.printer_ip:
-        # Recargar pedido con relaciones para tener items y mesa
+    caja_cocina = (
+        db.query(Caja)
+        .filter(Caja.tenant_id == user.tenant_id, Caja.tipo == "cocina", Caja.activo == True)
+        .first()
+    )
+    if caja_cocina and caja_cocina.printer_ip:
         pedido_fresco = _load_pedido(pedido_id, user.tenant_id, db)
         mesa_label = None
         if pedido_fresco.mesa:
@@ -387,8 +391,8 @@ def enviar_a_cocina(
             for it in pedido_fresco.items
         ]
         imprimir_ticket_cocina(
-            printer_ip=cfg.printer_ip,
-            printer_port=int(cfg.printer_port or 9100),
+            printer_ip=caja_cocina.printer_ip,
+            printer_port=int(caja_cocina.printer_port or 9100),
             pedido_numero=str(pedido_fresco.numero_ticket or pedido_id[:8]),
             mesa=mesa_label,
             tipo=pedido_fresco.tipo or "salon",
@@ -453,6 +457,74 @@ def cerrar_pedido(
         pedido.mesa.estado = "libre"
 
     db.commit()
+
+    # ── Imprimir ticket de caja (fallo silencioso) ────────────────────────────
+    caja_caja = (
+        db.query(Caja)
+        .filter(Caja.tenant_id == user.tenant_id, Caja.tipo == "caja", Caja.activo == True)
+        .first()
+    )
+    if caja_caja and caja_caja.printer_ip:
+        pedido_fresco = _load_pedido(pedido_id, user.tenant_id, db)
+        cfg = db.query(Configuracion).filter(Configuracion.tenant_id == user.tenant_id).first()
+
+        # Encabezado según tipo de pedido
+        if pedido_fresco.tipo in ("llevar",):
+            encabezado = f"PARA LLEVAR - {pedido_fresco.nombre_cliente or '—'}"
+        elif pedido_fresco.tipo == "delivery":
+            encabezado = f"DELIVERY - {pedido_fresco.nombre_cliente or pedido_fresco.telefono_delivery or '—'}"
+        else:
+            encabezado = f"Mesa {pedido_fresco.mesa.numero if pedido_fresco.mesa else '—'}"
+
+        # Fecha y hora
+        ts = pedido_fresco.hora_cierre or pedido_fresco.hora_apertura
+        fecha_str = ts.strftime("%d/%m/%Y") if ts else ""
+        hora_str  = ts.strftime("%H:%M")    if ts else ""
+
+        # Items
+        items_impresora = [
+            {
+                "cantidad": it.cantidad,
+                "nombre": it.plato.nombre if it.plato else "?",
+                "precio_unitario": float(it.precio_unitario or 0),
+                "nota": it.nota,
+            }
+            for it in pedido_fresco.items
+        ]
+
+        # Pagos
+        raw_pago = pedido_fresco.metodo_pago or "efectivo"
+        try:
+            pagos_dict = _json.loads(raw_pago)
+            pagos_lista = [{"metodo": k, "monto": v} for k, v in pagos_dict.items()]
+        except Exception:
+            pagos_lista = [{"metodo": raw_pago, "monto": float(pedido_fresco.total or 0)}]
+
+        descuento_val = float(data.descuento or 0)
+        subtotal_val  = float(pedido_fresco.total or 0) + descuento_val
+        total_val     = float(pedido_fresco.total or 0)
+        vuelto_val    = float(data.vuelto or 0) if hasattr(data, "vuelto") else 0.0
+
+        imprimir_ticket_caja(
+            printer_ip=caja_caja.printer_ip,
+            printer_port=int(caja_caja.printer_port or 9100),
+            nombre_restaurante=cfg.nombre_restaurante if cfg else "Restaurante",
+            ruc=cfg.ruc if cfg else None,
+            direccion=cfg.direccion if cfg else None,
+            pie=cfg.pie_ticket if cfg else None,
+            pedido_numero=str(pedido_fresco.numero_ticket or pedido_id[:8]),
+            fecha=fecha_str,
+            hora=hora_str,
+            encabezado=encabezado,
+            nombre_mozo=pedido_fresco.nombre_mozo,
+            items=items_impresora,
+            subtotal=subtotal_val,
+            descuento=descuento_val,
+            total=total_val,
+            pagos=pagos_lista,
+            vuelto=vuelto_val,
+        )
+
     return _pedido_out(_load_pedido(pedido_id, user.tenant_id, db))
 
 

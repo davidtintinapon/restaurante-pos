@@ -92,7 +92,7 @@ function CambiarPassword() {
 function GestionCajas() {
   const [cajas, setCajas] = useState([])
   const [loading, setLoading] = useState(true)
-  const [nueva, setNueva] = useState({ nombre: '', printer_ip: '', printer_port: '9100' })
+  const [nueva, setNueva] = useState({ nombre: '', tipo: 'caja', printer_ip: '', printer_port: '9100' })
   const [editando, setEditando] = useState(null)
   const [saving, setSaving] = useState(false)
   const [limiteAlcanzado, setLimiteAlcanzado] = useState(false)
@@ -110,10 +110,11 @@ function GestionCajas() {
     try {
       await api.post('/cajas/', {
         nombre: nueva.nombre.trim(),
+        tipo: nueva.tipo,
         printer_ip: nueva.printer_ip.trim() || null,
         printer_port: nueva.printer_port || '9100',
       })
-      setNueva({ nombre: '', printer_ip: '', printer_port: '9100' })
+      setNueva({ nombre: '', tipo: 'caja', printer_ip: '', printer_port: '9100' })
       setLimiteAlcanzado(false)
       setLimiteMsg('')
       cargar()
@@ -164,14 +165,22 @@ function GestionCajas() {
       ) : (
         <form onSubmit={crear} className="space-y-2 p-3 rounded-lg bg-gray-800/50 border border-gray-700/50">
           <p className="text-xs font-medium text-gray-400">Nueva caja</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <input
-              className="input sm:col-span-1"
-              placeholder="Nombre (Ej: Caja 1)"
+              className="input"
+              placeholder="Nombre (Ej: Caja 1, Cocina)"
               value={nueva.nombre}
               onChange={e => setNueva(p => ({ ...p, nombre: e.target.value }))}
               required
             />
+            <select
+              className="input"
+              value={nueva.tipo}
+              onChange={e => setNueva(p => ({ ...p, tipo: e.target.value }))}
+            >
+              <option value="caja">🧾 Caja (ticket con precios)</option>
+              <option value="cocina">🍳 Cocina (ticket sin precios)</option>
+            </select>
             <input
               className="input font-mono"
               placeholder="IP impresora (Ej: 192.168.1.100)"
@@ -228,7 +237,12 @@ function GestionCajas() {
               ) : (
                 <>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-200">{c.nombre}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-gray-200">{c.nombre}</p>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${c.tipo === 'cocina' ? 'bg-orange-500/20 text-orange-400' : 'bg-blue-500/20 text-blue-400'}`}>
+                        {c.tipo === 'cocina' ? '🍳 Cocina' : '🧾 Caja'}
+                      </span>
+                    </div>
                     {c.printer_ip ? (
                       <p className="text-xs text-gray-500 font-mono">{c.printer_ip}:{c.printer_port || '9100'}</p>
                     ) : (

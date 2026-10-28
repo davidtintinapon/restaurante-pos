@@ -10,6 +10,7 @@ class Caja(Base):
     id           = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     tenant_id    = Column(String(36), nullable=False, index=True)
     nombre       = Column(String(100), nullable=False)
+    tipo         = Column(String(10),  nullable=False, default="caja")  # 'caja' | 'cocina'
     printer_ip   = Column(String(50),  nullable=True)
     printer_port = Column(String(10),  default="9100")
     activo       = Column(Boolean,     default=True)

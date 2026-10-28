@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Literal
 from ..core.database import get_db
 from ..deps import get_current_user, require_admin
 from ..models import Usuario, Tenant
@@ -12,13 +12,51 @@ router = APIRouter(prefix="/cajas", tags=["cajas"])
 
 
 def _max_cajas_plan(plan: str) -> int:
-    """Retorna el límite de cajas del plan. 0 = ilimitado."""
+    """Retorna el límite TOTAL de cajas del plan. 0 = ilimitado."""
     return _PLAN_LIMITS.get(plan, _PLAN_LIMITS["basico"])["max_cajas"]
+
+
+def _validar_tipo_por_plan(plan: str, tipo: str, tenant_id: str, db: Session, exclude_id: str = None):
+    """
+    Valida que el plan permita agregar una caja del tipo indicado.
+    - basico  (max_cajas=1): 1 caja en total, cualquier tipo
+    - pro     (max_cajas=2): máximo 1 de tipo 'caja' Y 1 de tipo 'cocina'
+    - premium (max_cajas=0): sin límite
+    Lanza HTTPException 400 si se supera el límite.
+    """
+    max_cajas = _max_cajas_plan(plan)
+
+    if max_cajas == 0:
+        return  # premium: ilimitado
+
+    q = db.query(Caja).filter(Caja.tenant_id == tenant_id, Caja.activo == True)
+    if exclude_id:
+        q = q.filter(Caja.id != exclude_id)
+
+    if max_cajas == 1:
+        # básico: solo 1 caja total (cualquier tipo)
+        total = q.count()
+        if total >= 1:
+            raise HTTPException(
+                status_code=400,
+                detail="Tu plan Básico solo permite una caja en total. Actualiza tu plan para agregar más.",
+            )
+
+    elif max_cajas == 2:
+        # pro: máximo 1 por tipo
+        total_tipo = q.filter(Caja.tipo == tipo).count()
+        if total_tipo >= 1:
+            label = "caja" if tipo == "caja" else "cocina"
+            raise HTTPException(
+                status_code=400,
+                detail=f"Tu plan Pro ya tiene una impresora de {label} configurada. Solo se permite una por tipo.",
+            )
 
 
 class CajaOut(BaseModel):
     id:           str
     nombre:       str
+    tipo:         str
     printer_ip:   Optional[str] = None
     printer_port: str = "9100"
     activo:       bool
@@ -27,6 +65,7 @@ class CajaOut(BaseModel):
 
 class CajaCreate(BaseModel):
     nombre:       str
+    tipo:         Literal["caja", "cocina"] = "caja"
     printer_ip:   Optional[str] = None
     printer_port: Optional[str] = "9100"
 
@@ -57,24 +96,12 @@ def crear_caja(
     user: Usuario = Depends(require_admin),
 ):
     tenant = db.query(Tenant).filter(Tenant.id == user.tenant_id).first()
-    max_cajas = _max_cajas_plan(tenant.plan)
-
-    if max_cajas > 0:  # 0 = ilimitado
-        total = db.query(Caja).filter(
-            Caja.tenant_id == user.tenant_id,
-            Caja.activo == True,
-        ).count()
-        if total >= max_cajas:
-            nombres = {1: "una caja", 2: "dos cajas"}
-            limite_str = nombres.get(max_cajas, f"{max_cajas} cajas")
-            raise HTTPException(
-                status_code=400,
-                detail=f"Tu plan {tenant.plan.capitalize()} solo permite {limite_str}. Actualiza tu plan para agregar más.",
-            )
+    _validar_tipo_por_plan(tenant.plan, data.tipo, user.tenant_id, db)
 
     caja = Caja(
         tenant_id=user.tenant_id,
         nombre=data.nombre,
+        tipo=data.tipo,
         printer_ip=data.printer_ip,
         printer_port=data.printer_port or "9100",
     )
