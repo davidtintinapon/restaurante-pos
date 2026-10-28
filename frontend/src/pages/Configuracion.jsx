@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../api'
 import { useToast } from '../context/ToastContext'
+import { useAuth } from '../context/AuthContext'
 import Spinner from '../components/ui/Spinner'
 
 const DEFAULTS = {
@@ -90,6 +91,8 @@ function CambiarPassword() {
 
 
 function GestionCajas() {
+  const { user } = useAuth()
+  const plan = user?.plan || 'basico'
   const [cajas, setCajas] = useState([])
   const [loading, setLoading] = useState(true)
   const [nueva, setNueva] = useState({ nombre: '', tipo: 'caja', printer_ip: '', printer_port: '9100' })
@@ -154,7 +157,11 @@ function GestionCajas() {
     <div className="space-y-4">
       <div>
         <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-1">Cajas / Impresoras</h3>
-        <p className="text-xs text-gray-500">Cada caja tiene su propia impresora térmica de cocina. El límite depende de tu plan.</p>
+        <p className="text-xs text-gray-500">
+          {plan === 'basico' && '📦 Plan Básico: 1 impresora total — elige si quieres ticket de cocina o de caja.'}
+          {plan === 'pro' && '⭐ Plan Pro: hasta 2 impresoras — 1 de cocina y 1 de caja.'}
+          {plan === 'premium' && '🚀 Plan Premium: impresoras ilimitadas.'}
+        </p>
       </div>
 
       {/* Formulario nueva caja */}
@@ -181,6 +188,16 @@ function GestionCajas() {
               <option value="caja">🧾 Caja (ticket con precios)</option>
               <option value="cocina">🍳 Cocina (ticket sin precios)</option>
             </select>
+            {plan === 'basico' && (
+              <p className="text-xs text-yellow-400/80 sm:col-span-2">
+                ⚠️ Plan Básico: solo puedes tener 1 impresora. Al elegir <strong>Cocina</strong> imprimirá cuando el mozo envíe el pedido. Al elegir <strong>Caja</strong> imprimirá cuando el cajero cobre.
+              </p>
+            )}
+            {plan === 'pro' && nueva.tipo && cajas.filter(c => c.activo && c.tipo === nueva.tipo).length >= 1 && (
+              <p className="text-xs text-yellow-400/80 sm:col-span-2">
+                ⚠️ Ya tienes una impresora de {nueva.tipo === 'cocina' ? 'cocina' : 'caja'} configurada. El Plan Pro permite solo 1 por tipo.
+              </p>
+            )}
             <input
               className="input font-mono"
               placeholder="IP impresora (Ej: 192.168.1.100)"
