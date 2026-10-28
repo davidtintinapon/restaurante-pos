@@ -165,12 +165,25 @@ function GestionCajas() {
       </div>
 
       {/* Formulario nueva caja */}
-      {limiteAlcanzado ? (
-        <div className="px-3 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs">
-          {limiteMsg}
-        </div>
-      ) : (
+      {(() => {
+        const activas = cajas.filter(c => c.activo)
+        const lleno =
+          (plan === 'basico' && activas.length >= 1) ||
+          (plan === 'pro' && activas.filter(c => c.tipo === 'cocina').length >= 1 && activas.filter(c => c.tipo === 'caja').length >= 1)
+        if (lleno) return (
+          <div className="px-3 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs">
+            {plan === 'basico'
+              ? 'Has alcanzado el límite de tu plan Básico (1 impresora). Actualiza tu plan para agregar más.'
+              : 'Has configurado 1 impresora de cocina y 1 de caja. Límite del Plan Pro alcanzado.'}
+          </div>
+        )
+        return (
         <form onSubmit={crear} className="space-y-2 p-3 rounded-lg bg-gray-800/50 border border-gray-700/50">
+          {limiteMsg && (
+            <div className="px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+              {limiteMsg}
+            </div>
+          )}
           <p className="text-xs font-medium text-gray-400">Nueva caja</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <input
@@ -217,7 +230,8 @@ function GestionCajas() {
             </div>
           </div>
         </form>
-      )}
+        )
+      })()}
 
       {/* Lista de cajas */}
       {cajas.length === 0 ? (
